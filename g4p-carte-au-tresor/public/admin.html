@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carte au trésor — admin</title>
+<style>
+  :root { --bg: #14161c; --bg2: #1d2029; --bg3: #262a36; --tx: #e8e6df; --mut: #8b8f9c; --jaune: #F5C518; --rouge: #e5484d; --vert: #46a758; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--tx); font: 14px/1.4 system-ui, sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg2); border-bottom: 1px solid #333; padding: 10px 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0 14px 0 0; }
+  header h1 span { color: var(--jaune); }
+  .status { display: flex; gap: 8px; font-size: 12px; color: var(--mut); }
+  .status b { color: var(--tx); }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--rouge); margin-right: 4px; }
+  .dot.ok { background: var(--vert); }
+  .sp { flex: 1; }
+  button { background: var(--bg3); color: var(--tx); border: 1px solid #3a3f4d; border-radius: 6px; padding: 7px 12px; cursor: pointer; font: inherit; }
+  button:hover { border-color: var(--jaune); }
+  button.p { background: var(--jaune); color: #222; border-color: var(--jaune); font-weight: 700; }
+  button.d { border-color: var(--rouge); color: var(--rouge); }
+  main { display: grid; grid-template-columns: minmax(520px, 1.3fr) minmax(380px, 1fr); gap: 18px; padding: 18px; }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+  section { background: var(--bg2); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; }
+  section h2 { font-size: 15px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+  section h2 small { color: var(--mut); font-weight: 400; }
+  .grid { display: grid; gap: 4px; }
+  .cell { aspect-ratio: 1; border-radius: 5px; border: 1px solid #3a3f4d; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; font-size: 11px; position: relative; background: var(--bg3); user-select: none; }
+  .cell:hover { border-color: var(--jaune); }
+  .cell.sel { outline: 2px solid var(--jaune); }
+  .cell .i { font-size: 16px; }
+  .cell .id { position: absolute; top: 2px; left: 3px; font-size: 9px; color: var(--mut); }
+  .cell.capitaine { background: #1e4a78; } .cell.doublons { background: #4a3b0a; } .cell.gage { background: #5a1f1c; } .cell.indice { background: #1d4a2e; } .cell.secret { background: #3b2559; } .cell.piege { background: #000; } .cell.tresor { background: #8a6d00; }
+  .cell.rev { opacity: .35; } .cell.rev::after { content: '✔'; position: absolute; right: 3px; bottom: 1px; font-size: 10px; color: var(--vert); }
+  .cell.cand { box-shadow: 0 0 0 2px var(--jaune) inset; }
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--mut); margin-top: 8px; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 3px; }
+  label { display: block; font-size: 12px; color: var(--mut); margin: 8px 0 3px; }
+  input, select, textarea { width: 100%; background: var(--bg); color: var(--tx); border: 1px solid #3a3f4d; border-radius: 6px; padding: 7px 9px; font: inherit; }
+  input[type=checkbox] { width: auto; margin-right: 6px; }
+  textarea { min-height: 120px; font-family: ui-monospace, monospace; font-size: 12px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .help { font-size: 12px; color: var(--mut); margin: 4px 0 0; }
+  code { background: var(--bg3); padding: 1px 5px; border-radius: 4px; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  .dette { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid #2c303c; }
+  .dette.done { opacity: .4; text-decoration: line-through; }
+  .dette b { color: var(--rouge); min-width: 30px; }
+  .journal li { font-size: 12px; padding: 3px 0; border-bottom: 1px solid #23262f; color: var(--mut); }
+  .journal li b { color: var(--tx); font-weight: 600; }
+  .journal li.don b { color: var(--jaune); } .journal li.reveal b { color: var(--vert); } .journal li.erreur b { color: var(--rouge); }
+  details summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
+  .ok { color: var(--vert); font-size: 12px; margin-left: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>⚓ Carte au trésor — <span>admin</span></h1>
+  <div class="status">
+    <span><i class="dot" id="dWs"></i>serveur</span>
+    <span><i class="dot" id="dSl"></i>Streamlabs</span>
+    <span><i class="dot" id="dBot"></i>bot chat</span>
+    <span>Carte <b id="stCarte">1</b> · Manche <b id="stManche">–</b> · <b id="stVot">0</b> votants · <b id="stRev">0</b>/<b id="stTot">0</b> cases</span>
+  </div>
+  <div class="sp"></div>
+  <button onclick="act('nouvelle-manche')">↻ Nouvelle manche</button>
+  <button onclick="act('terminer-manche')">⏩ Terminer la manche</button>
+  <button onclick="if(confirm('Archiver la carte en cours et en générer une nouvelle ? (dons, km et dettes sont conservés)')) act('nouvelle-carte')">🗺️ Nouvelle carte</button>
+  <a href="/recap" target="_blank"><button>📰 Récap</button></a>
+  <button id="btnPause" onclick="act('pause', {pause: !S.pause})">⏸ Pause</button>
+  <button class="d" onclick="if(confirm('Remettre à zéro : cases révélées, dons, dettes, totaux. La config, les gages ET le classement des pirates sont conservés. Sûr ?')) act('reset-etat')">Reset état</button>
+  <button class="d" onclick="if(confirm('TOUT remettre à zéro, classement des pirates compris. À ne faire qu\'avant le début de l\'event. Sûr ?')) act('reset-etat',{classementAussi:true})">Reset total</button>
+</header>
+
+<main>
+<div>
+  <section>
+    <h2>Carte <small>— clique une case pour la modifier</small></h2>
+    <div class="grid" id="grid"></div>
+    <div class="legend">
+      <span><i style="background:#262a36"></i>sable</span><span><i style="background:#4a3b0a"></i>doublons</span><span><i style="background:#5a1f1c"></i>gage</span>
+      <span><i style="background:#1d4a2e"></i>indice</span><span><i style="background:#3b2559"></i>secret</span><span><i style="background:#000"></i>piège</span><span><i style="background:#8a6d00"></i>trésor</span><span><i style="background:#1e4a78"></i>capitaine</span>
+      <span>· contour jaune = candidate de la manche · ✔ = révélée</span>
+    </div>
+    <div class="btns">
+      <button onclick="genGrid(false)">🎲 Générer une grille aléatoire (remplace tout)</button>
+      <button onclick="genGrid(true)">🎲 Compléter les cases vides</button>
+      <button onclick="act('melanger').then(loadConfig)">🔀 Mélanger l'emplacement des cases</button>
+      <button onclick="act('injecter-duo').then(loadConfig)">🤝 Injecter les gages à deux sur cette carte</button>
+    </div>
+    <p class="help">La génération utilise les proportions et la banque de gages ci-dessous. « Mélanger » garde les mêmes contenus mais les redistribue au hasard sur les cases non révélées (pratique après avoir placé tes gages à la main). Le trésor n'est jamais placé sur un bord.</p>
+  </section>
+
+  <section id="editor">
+    <h2>Case <span id="edId" style="color:var(--jaune)">—</span> <small id="edState"></small></h2>
+    <div class="row">
+      <div><label>Type</label>
+        <select id="edType" onchange="edTypeChange()">
+          <option value="sable">Sable (rien)</option><option value="doublons">Doublons</option><option value="gage">Gage</option>
+          <option value="indice">Indice (auto si vide)</option><option value="secret">Secret / palier caché</option><option value="piege">Piège</option><option value="capitaine">Capitaine (avantage / malus chat)</option><option value="tresor">Trésor final</option>
+        </select></div>
+      <div id="edValueWrap"><label>Valeur (doublons)</label><input id="edValue" type="number" min="0"></div>
+    </div>
+    <div id="edEffetWrap"><label>Effet</label><select id="edEffet" onchange="edEffetChange()"></select></div>
+    <label>Texte affiché</label><input id="edLabel" placeholder="ex : Faire son petit-déj en accent pirate">
+    <div id="edDuoWrap" class="row">
+      <div><label style="margin-top:22px"><input type="checkbox" id="edDuo" onchange="edDuoChange()"> Gage à deux (avec le pote) — <code>{pote}</code> = son nom</label></div>
+      <div><label>Mode</label><select id="edMode"><option value="ensemble">Ensemble (vous le faites tous les deux)</option><option value="inflige">Infligé (le pote te le fait subir)</option></select></div>
+    </div>
+    <div id="edQuandWrap"><label>Quand</label>
+      <select id="edQuand"><option value="reveil">Au réveil</option><option value="prochain-live">Prochain live / dans la journée</option></select></div>
+    <div class="btns">
+      <button class="p" onclick="saveCell()">Enregistrer</button>
+      <button onclick="act('reveler', {cell: sel})">Révéler maintenant</button>
+      <button onclick="act('cacher', {cell: sel})">Re-cacher</button>
+      <span class="ok" id="edOk"></span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Don manuel <small>— pour tester ou rattraper un don passé à côté</small></h2>
+    <div class="row3">
+      <div><label>Nom</label><input id="dNom" value="Test"></div>
+      <div><label>Montant (€)</label><input id="dMontant" type="number" value="5" step="0.5"></div>
+      <div><label>Message (case optionnelle)</label><input id="dMsg" placeholder="B7 pour creuser là"></div>
+    </div>
+    <div class="btns"><button class="p" onclick="donManuel()">Envoyer le don</button></div>
+  </section>
+
+  <section>
+    <h2>🧪 Tests <small>— pour voir le rendu dans OBS sans attendre ; les « révélations simulées » ne touchent pas la carte</small></h2>
+    <div class="btns">
+      <button onclick="act('test-votes',{n:8})">8 votes aléatoires</button>
+      <button onclick="act('vider-votes')">Vider les votes</button>
+      <button onclick="testDon(3, '')">Don 3 € sans case</button>
+      <button onclick="testDon(4, 'hors')">Don 4 € case hors vote</button>
+      <button onclick="testDon(15, 'cand')">Don 15 € → creuse direct</button>
+      <button onclick="act('test-toast')">Toast don seul</button>
+
+      <button onclick="act('test-carte')">Annonce nouvelle carte</button>
+    </div>
+    <label>Révélation simulée (affichage seulement)</label>
+    <div class="btns" style="margin-top:4px">
+      <button onclick="act('test-reveal',{type:'sable'})">⛏️ sable</button>
+      <button onclick="act('test-reveal',{type:'doublons'})">🪙 doublons</button>
+      <button onclick="act('test-reveal',{type:'gage'})">🎯 gage</button>
+      <button onclick="act('test-reveal',{type:'gage',duo:true})">🤝 gage à deux</button>
+      <button onclick="act('test-reveal',{type:'indice'})">🧭 indice</button>
+      <button onclick="act('test-reveal',{type:'secret'})">🔮 secret</button>
+      <button onclick="act('test-reveal',{type:'piege'})">💀 piège</button>
+      <button onclick="act('test-reveal',{type:'tresor'})">💎 trésor</button>
+      <select id="tEffet" style="width:auto"></select><button onclick="act('test-reveal',{type:'capitaine',effet:$('tEffet').value})">🏴‍☠️ capitaine</button>
+    </div>
+    <p class="help">Les dons de test passent par la vraie logique (ils comptent dans les totaux) — fais un <b>Reset état</b> avant le live.</p>
+  </section>
+
+  <section>
+    <h2>📰 Récap de la nuit <small>— page 1920×1080 pour OBS + texte à coller sur Discord / X</small></h2>
+    <div class="btns">
+      <a href="/recap" target="_blank"><button>Ouvrir le récap (carte en cours)</button></a>
+      <a href="/recap?carte=prev" target="_blank"><button>Récap de la carte précédente</button></a>
+      <button onclick="copierRecap('current')">📋 Copier le texte (carte en cours)</button>
+      <button onclick="copierRecap('prev')">📋 Copier le texte (précédente)</button>
+      <span class="ok" id="recapOk"></span>
+    </div>
+    <p class="help">Dans OBS : source navigateur <code>http://localhost:3000/recap</code>, à afficher au réveil. Le texte se copie dans le presse-papier.</p>
+  </section>
+
+  <section>
+    <h2>🏴‍☠️ Classement des pirates <small>— doublons gagnés par les votants des cases dorées, cumulés sur la semaine · le 1er est « Second du navire », son vote compte double</small></h2>
+    <ol id="topAdmin" style="padding-left:20px"></ol>
+  </section>
+
+  <section>
+    <h2>Dettes du capitaine <small>— coche quand c'est fait</small></h2>
+    <ul id="dettes"></ul>
+  </section>
+</div>
+
+<div>
+  <section>
+    <h2>Réglages <span class="ok" id="cfgOk"></span></h2>
+    <label>Chaîne Twitch</label><input id="c_chaine">
+    <div class="row3">
+      <div><label>Colonnes</label><input id="c_cols" type="number" min="4" max="26"></div>
+      <div><label>Lignes</label><input id="c_rows" type="number" min="3" max="20"></div>
+      <div><label>Cases proposées / manche</label><input id="c_cand" type="number" min="2" max="12"></div>
+    </div>
+    <div class="row3">
+      <div><label>Durée manche (s)</label><input id="c_duree" type="number" min="20"></div>
+      <div><label>Pause entre manches (s)</label><input id="c_pause" type="number" min="3"></div>
+      <div><label>Votes mini sinon auto</label><input id="c_min" type="number" min="0"></div>
+    </div>
+    <div class="row3">
+      <div><label style="margin-top:22px"><input type="checkbox" id="c_resetAuto"> Nouvelle carte chaque jour</label></div>
+      <div><label>à (heure locale)</label><input id="c_heureReset" type="time"></div>
+      <div><label style="margin-top:22px"><input type="checkbox" id="c_resetDoublons"> Remettre les doublons à 0</label></div>
+    </div>
+    <p class="help">La carte en cours est archivée, une nouvelle grille est générée avec la banque de gages. Dons, km et dettes restent cumulés.</p>
+    <label><input type="checkbox" id="c_libre"> Vote libre (n'importe quelle case, pas seulement les candidates)</label>
+    <label><input type="checkbox" id="c_auto"> Si personne ne vote, le perroquet creuse quand même une case au hasard (décoché : rien n'est creusé sans vote, la manche est prolongée)</label>
+    <div class="row3">
+      <div><label>Votes par €</label><input id="c_vpe" type="number" step="0.5"></div>
+      <div><label>Creuse direct dès (€)</label><input id="c_seuil" type="number" step="1"></div>
+      <div><label>km par €</label><input id="c_km" type="number" step="0.01"></div>
+    </div>
+    <label><input type="checkbox" id="c_creuseLibre"> Un don ≥ seuil peut creuser <b>n'importe quelle</b> case (décoché : seulement les cases proposées au vote)</label>
+    <label><input type="checkbox" id="c_ajouteCand"> Un don &lt; seuil sur une case hors vote <b>l'ajoute aux cases proposées</b> (décoché : les votes vont sur la case en tête)</label>
+    <div class="row">
+      <div><label>Commande de vote</label><input id="c_cmd"></div>
+      <div><label style="margin-top:22px"><input type="checkbox" id="c_sanscmd"> Accepter « B7 » seul comme vote</label></div>
+    </div>
+    <details><summary>🤝 Week-end avec le pote — gages à deux</summary>
+      <div class="row3">
+        <div><label>Nom du pote (remplace <code>{pote}</code>)</label><input id="d_nom" placeholder="ex : Mathis"></div>
+        <div><label>Gages à deux par carte</label><input id="d_nb" type="number" min="0"></div>
+        <div><label>Dates (AAAA-MM-JJ, une par ligne)</label><textarea id="d_dates" style="min-height:60px"></textarea></div>
+      </div>
+      <p class="help">Les cartes générées ces jours-là (à l'heure de la nouvelle carte, 22:00 par défaut) contiennent automatiquement des gages à deux. Le bouton « Injecter » au-dessus de la carte fait pareil sur la carte en cours, à n'importe quel moment.</p>
+      <label>Banque de gages à deux — un par ligne, ajoute <code>|inflige</code> pour ceux que le pote te fait subir</label><textarea id="d_banque" style="min-height:160px"></textarea>
+    </details>
+    <details><summary>Dons — Streamlabs / bot du chat / webhook</summary>
+      <label>Streamlabs socket token</label><input id="c_sl" type="password" placeholder="Streamlabs → Settings → API Settings → Socket API Token">
+      <p class="help">Capte les dons Streamlabs et Streamlabs Charity en direct.</p>
+      <label>Nom du bot qui annonce les dons dans le chat (optionnel)</label><input id="c_botname" placeholder="ex : streamelements">
+      <label>Regex de détection d'un don dans le chat</label><input id="c_regex" placeholder="^(?<nom>.+?) vient de donner (?<montant>[\d.,]+) ?€">
+      <p class="help">Groupes nommés obligatoires : <code>nom</code>, <code>montant</code> ; optionnel : <code>message</code>. Laisse vide pour désactiver.</p>
+      <p class="help">Webhook générique : <code>POST /api/don</code> avec <code>{"nom":"X","montant":12,"message":"B7"}</code></p>
+    </details>
+    <details><summary>Bot qui écrit dans le chat (optionnel)</summary>
+      <div class="row"><div><label>Compte</label><input id="c_botu"></div><div><label>Token oauth:…</label><input id="c_boto" type="password"></div></div>
+      <label><input type="checkbox" id="c_botann"> Annoncer les révélations et les dons dans le chat</label>
+      <p class="help">Token via <code>twitchtokengenerator.com</code> (scopes chat:read + chat:edit) sur le compte du bot.</p>
+    </details>
+    <details><summary>Affichage</summary>
+      <label>Titre</label><input id="c_titre">
+      <label>Sous-titre</label><input id="c_sous">
+      <label>Récompense du classement (affichée sous le top 5)</label><input id="c_recomp">
+      <label>Couleur d'accent</label><input id="c_coul" type="color">
+      <label>Phrases du bandeau (une par ligne)</label><textarea id="c_phrases"></textarea>
+    </details>
+    <details><summary>Génération aléatoire — proportions et banque de gages</summary>
+      <p class="help">Nombre de cases par type (le reste = sable). Grille actuelle : <span id="nbCases">–</span> cases.</p>
+      <div class="row3">
+        <div><label>Doublons</label><input id="g_doublons" type="number"></div>
+        <div><label>Gages</label><input id="g_gage" type="number"></div>
+        <div><label>Indices</label><input id="g_indice" type="number"></div>
+        <div><label>Secrets</label><input id="g_secret" type="number"></div>
+        <div><label>Pièges</label><input id="g_piege" type="number"></div>
+        <div><label>Capitaine</label><input id="g_capitaine" type="number"></div>
+      </div>
+      <label>Effets « Capitaine » utilisés à la génération (cocher)</label>
+    <div id="g_effets" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px"></div>
+    <label>Gage ultime (trésor)</label><input id="g_ultime">
+      <label>Banque de gages — un par ligne, ajoute <code>|live</code> pour « prochain live »</label><textarea id="g_gages"></textarea>
+      <label>Secrets / paliers cachés — un par ligne</label><textarea id="g_secrets" style="min-height:70px"></textarea>
+      <label>Pièges — un par ligne</label><textarea id="g_pieges" style="min-height:70px"></textarea>
+    </details>
+    <div class="btns"><button class="p" onclick="saveConfig()">Enregistrer les réglages</button></div>
+  </section>
+
+  <section>
+    <h2>Journal</h2>
+    <ul class="journal" id="journal"></ul>
+  </section>
+</div>
+</main>
+
+<script>
+const L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const ICO = { sable: '', doublons: '🪙', gage: '🎯', indice: '🧭', secret: '🔮', piege: '💀', tresor: '💎', capitaine: '🏴‍☠️', scelle: '⛓️' };
+const EFFETS = { annuleDette: 'Amnistie — efface la dernière dette', moinsKm: 'Vent arrière — retire X km', brouillard: 'Brouillard — votes cachés à la prochaine manche', mancheCourte: 'Manche éclair — prochaine manche 2× plus courte', perteDoublons: 'Rats — le chat perd X doublons', seuilDouble: 'Sommeil profond — seuil de creuse direct doublé 2 manches', scelle: 'Marée haute — X cases deviennent increusables' };
+let S = null, C = null, CFG = null, sel = null, gridKey = '';
+const $ = id => document.getElementById(id);
+const api = (m, u, b) => fetch(u, { method: m, headers: { 'Content-Type': 'application/json' }, body: b ? JSON.stringify(b) : undefined }).then(r => r.json());
+const act = (what, body = {}) => api('POST', '/api/action/' + what, body);
+
+async function loadConfig() {
+  CFG = await api('GET', '/api/config');
+  $('c_chaine').value = CFG.chaine || '';
+  $('c_cols').value = CFG.grille.cols; $('c_rows').value = CFG.grille.rows; $('c_cand').value = CFG.round.candidats;
+  $('c_duree').value = CFG.round.dureeSec; $('c_pause').value = CFG.round.pauseSec ?? 12; $('c_min').value = CFG.round.minVotes;
+  $('c_libre').checked = !!CFG.round.voteLibre;
+  $('c_resetAuto').checked = CFG.carte?.resetAuto !== false; $('c_heureReset').value = CFG.carte?.heureReset || '22:00'; $('c_resetDoublons').checked = CFG.carte?.resetDoublons !== false; $('c_auto').checked = !!CFG.round.autoCreuseSiVide;
+  $('c_vpe').value = CFG.dons.votesParEuro; $('c_seuil').value = CFG.dons.seuilCreuseImmediat; $('c_km').value = CFG.dons.kmParEuro;
+  $('c_creuseLibre').checked = CFG.dons.creuseLibre !== false; $('c_ajouteCand').checked = CFG.dons.ajouteCandidate !== false;
+  $('c_cmd').value = CFG.chat.commande || '!creuse'; $('c_sanscmd').checked = !!CFG.chat.voteSansCommande;
+  $('c_sl').value = CFG.streamlabs?.socketToken || ''; $('c_botname').value = CFG.chat.botName || ''; $('c_regex').value = CFG.chat.regexDon || '';
+  $('c_botu').value = CFG.bot?.username || ''; $('c_boto').value = CFG.bot?.oauth || ''; $('c_botann').checked = !!CFG.bot?.annoncerDansLeChat;
+  $('c_titre').value = CFG.affichage?.titre || ''; $('c_recomp').value = CFG.affichage?.recompense || ''; $('c_sous').value = CFG.affichage?.sousTitre || ''; $('c_coul').value = CFG.affichage?.couleur || '#F5C518';
+  $('c_phrases').value = (CFG.affichage?.phrasesNuit || []).join('\n');
+  const g = CFG.generation || {};
+  for (const k of ['doublons', 'gage', 'indice', 'secret', 'piege', 'capitaine']) $('g_' + k).value = g.proportions?.[k] ?? 0;
+  $('g_ultime').value = g.gageUltime || '';
+  const actifs = g.effetsCapitaine || Object.keys(EFFETS);
+  $('g_effets').innerHTML = Object.entries(EFFETS).map(([k, v]) => `<label style="margin:0"><input type="checkbox" class="g_eff" value="${k}" ${actifs.includes(k) ? 'checked' : ''}> ${v}</label>`).join('');
+  $('g_gages').value = (g.banqueGages || []).map(x => typeof x === 'string' ? x : x.label + (x.quand === 'prochain-live' ? ' |live' : '')).join('\n');
+  $('g_secrets').value = (g.secrets || []).join('\n'); $('g_pieges').value = (g.pieges || []).join('\n');
+  $('nbCases').textContent = CFG.grille.cols * CFG.grille.rows;
+  const d = CFG.duo || {};
+  $('d_nom').value = d.nomPote || ''; $('d_nb').value = d.nbParCarte ?? 6; $('d_dates').value = (d.dates || []).join('\n');
+  $('d_banque').value = (g.banqueGagesDuo || []).map(x => x.label + (x.mode === 'inflige' ? ' |inflige' : '')).join('\n');
+}
+async function saveConfig() {
+  const lines = id => $(id).value.split('\n').map(s => s.trim()).filter(Boolean);
+  const body = {
+    chaine: $('c_chaine').value.trim().toLowerCase().replace(/^#/, ''),
+    grille: { cols: +$('c_cols').value, rows: +$('c_rows').value },
+    round: { dureeSec: +$('c_duree').value, pauseSec: +$('c_pause').value, candidats: +$('c_cand').value, voteLibre: $('c_libre').checked, minVotes: +$('c_min').value, autoCreuseSiVide: $('c_auto').checked },
+    carte: { resetAuto: $('c_resetAuto').checked, heureReset: $('c_heureReset').value || '22:00', resetDoublons: $('c_resetDoublons').checked },
+    dons: { votesParEuro: +$('c_vpe').value, seuilCreuseImmediat: +$('c_seuil').value, kmParEuro: +$('c_km').value, creuseLibre: $('c_creuseLibre').checked, ajouteCandidate: $('c_ajouteCand').checked },
+    chat: { commande: $('c_cmd').value.trim() || '!creuse', voteSansCommande: $('c_sanscmd').checked, botName: $('c_botname').value.trim(), regexDon: $('c_regex').value.trim() },
+    streamlabs: { socketToken: $('c_sl').value.trim() },
+    bot: { username: $('c_botu').value.trim(), oauth: $('c_boto').value.trim(), annoncerDansLeChat: $('c_botann').checked },
+    affichage: { ...(CFG.affichage || {}), titre: $('c_titre').value, recompense: $('c_recomp').value, sousTitre: $('c_sous').value, couleur: $('c_coul').value, phrasesNuit: lines('c_phrases') },
+    duo: { nomPote: $('d_nom').value.trim(), nbParCarte: +$('d_nb').value || 0, dates: lines('d_dates') },
+    generation: {
+      banqueGagesDuo: lines('d_banque').map(l => { const inf = /\|\s*inflige\s*$/i.test(l); return { label: l.replace(/\|\s*inflige\s*$/i, '').trim(), mode: inf ? 'inflige' : 'ensemble' }; }),
+      proportions: Object.fromEntries(['doublons', 'gage', 'indice', 'secret', 'piege', 'capitaine'].map(k => [k, +$('g_' + k).value])),
+      gageUltime: $('g_ultime').value,
+      effetsCapitaine: [...document.querySelectorAll('.g_eff:checked')].map(x => x.value),
+      banqueGages: lines('g_gages').map(l => { const live = /\|\s*live\s*$/i.test(l); return { label: l.replace(/\|\s*live\s*$/i, '').trim(), quand: live ? 'prochain-live' : 'reveil' }; }),
+      secrets: lines('g_secrets'), pieges: lines('g_pieges')
+    }
+  };
+  await api('PUT', '/api/config', body);
+  flash('cfgOk'); loadConfig();
+}
+function genGrid(keep) {
+  if (!keep && !confirm('Remplacer TOUTES les cases par une grille aléatoire ?')) return;
+  act('generer-grille', { garderExistantes: keep }).then(loadConfig);
+}
+function flash(id) { $(id).textContent = '✔ enregistré'; setTimeout(() => $(id).textContent = '', 1800); }
+
+// ---- grille
+function buildGrid() {
+  const key = C.grille.cols + 'x' + C.grille.rows; if (gridKey === key) return; gridKey = key;
+  const g = $('grid'); g.innerHTML = ''; g.style.gridTemplateColumns = `repeat(${C.grille.cols}, 1fr)`;
+  for (let r = 0; r < C.grille.rows; r++) for (let c = 0; c < C.grille.cols; c++) {
+    const id = L[c] + (r + 1);
+    const el = document.createElement('div'); el.className = 'cell'; el.id = 'g-' + id;
+    el.innerHTML = `<span class="id">${id}</span><span class="i"></span>`;
+    el.onclick = () => select(id); g.appendChild(el);
+  }
+}
+function renderGrid() {
+  buildGrid();
+  const cands = S.round?.candidates || [];
+  document.querySelectorAll('.cell').forEach(el => {
+    const id = el.id.slice(2), def = C.cellules[id] || { type: 'sable' };
+    el.className = 'cell ' + def.type + (S.revealed[id] ? ' rev' : '') + (cands.includes(id) ? ' cand' : '') + (sel === id ? ' sel' : '');
+    el.querySelector('.i').textContent = (def.duo ? '🤝' : ICO[def.type]) + (def.type === 'doublons' ? def.value : '');
+    el.title = def.label || '';
+  });
+}
+function select(id) {
+  sel = id; renderGrid();
+  const def = C.cellules[id] || { type: 'sable' };
+  $('edId').textContent = id; $('edState').textContent = S.revealed[id] ? '(déjà révélée)' : '';
+  $('edType').value = def.type; $('edLabel').value = def.label || ''; $('edDuo').checked = !!def.duo; $('edMode').value = def.mode || 'ensemble'; $('edValue').value = def.value ?? ''; $('edQuand').value = def.quand || 'reveil';
+  edTypeChange();
+}
+function edEffetChange() {
+  const e = $('edEffet').value;
+  $('edValueWrap').style.display = ['moinsKm', 'perteDoublons', 'scelle'].includes(e) ? '' : 'none';
+  $('edValueWrap').querySelector('label').textContent = { moinsKm: 'km retirés', perteDoublons: 'doublons perdus', scelle: 'nb de cases scellées' }[e] || 'Valeur';
+  if (!$('edValue').value) $('edValue').value = { moinsKm: 1, perteDoublons: 20, scelle: 2 }[e] || '';
+}
+function edDuoChange() { $('edMode').parentElement.style.visibility = $('edDuo').checked ? '' : 'hidden'; }
+function edTypeChange() {
+  const t = $('edType').value;
+  $('edDuoWrap').style.display = t === 'gage' ? '' : 'none'; edDuoChange();
+  $('edEffetWrap').style.display = t === 'capitaine' ? '' : 'none';
+  if (t === 'capitaine') {
+    if (!$('edEffet').options.length) for (const [k, v] of Object.entries(EFFETS)) $('edEffet').add(new Option(v, k));
+    const def = C.cellules[sel] || {}; $('edEffet').value = def.effet || 'annuleDette'; edEffetChange(); $('edLabel').placeholder = 'Vide = texte automatique de l’effet'; $('edQuandWrap').style.display = 'none'; return;
+  }
+  $('edValueWrap').style.display = (t === 'doublons' || t === 'piege') ? '' : 'none';
+  $('edQuandWrap').style.display = (t === 'gage' || t === 'piege') ? '' : 'none';
+  $('edLabel').placeholder = { gage: 'Le gage à exécuter', indice: 'Vide = indice généré automatiquement', secret: 'Ce qui se débloque', piege: 'Ce qui arrive (optionnel)', tresor: 'Le gage ultime', sable: 'Texte optionnel (ex : « une vieille botte »)', doublons: '' }[t] || '';
+}
+async function saveCell() {
+  if (!sel) return;
+  const t = $('edType').value;
+  const body = { type: t, label: $('edLabel').value.trim() };
+  if (t === 'doublons' || t === 'piege' || t === 'capitaine') body.value = +$('edValue').value || 0;
+  if (t === 'capitaine') body.effet = $('edEffet').value;
+  if (t === 'gage' || t === 'piege') body.quand = $('edQuand').value;
+  if (t === 'gage' && $('edDuo').checked) { body.duo = true; body.mode = $('edMode').value; }
+  await api('PUT', '/api/cellule/' + sel, body);
+  flash('edOk');
+}
+function testDon(montant, mode) {
+  let cell = '';
+  if (mode === 'cand') cell = (S.round?.candidates || []).find(c => !S.revealed[c]) || 'B2';
+  if (mode === 'hors') { const all = []; for (let r = 1; r <= C.grille.rows; r++) for (let c = 0; c < C.grille.cols; c++) all.push(L[c] + r); cell = all.find(c => !S.revealed[c] && !(S.round?.candidates || []).includes(c)) || 'C3'; }
+  api('POST', '/api/don', { nom: 'Moussaillon', montant, message: cell, source: 'test', id: 'test-' + Date.now() });
+}
+async function copierRecap(which) {
+  const t = await fetch('/api/recap.txt?carte=' + which).then(r => r.text());
+  try { await navigator.clipboard.writeText(t); flash('recapOk'); } catch { prompt('Copie le texte :', t); }
+}
+async function donManuel() {
+  await api('POST', '/api/don', { nom: $('dNom').value, montant: +$('dMontant').value, message: $('dMsg').value, source: 'admin', id: 'admin-' + Date.now() });
+}
+
+// ---- état
+function render() {
+  renderGrid();
+  $('stCarte').textContent = S.carte?.numero || 1;
+  $('stManche').textContent = S.round ? S.round.number : (S.pause ? 'pause' : '…');
+  $('stVot').textContent = S.round?.nbVotants || 0;
+  $('stRev').textContent = Object.keys(S.revealed).length; $('stTot').textContent = C.grille.cols * C.grille.rows;
+  $('btnPause').textContent = S.pause ? '▶ Reprendre' : '⏸ Pause';
+  $('dSl').className = 'dot' + (C.streamlabs?.connecte ? ' ok' : ''); $('dBot').className = 'dot' + (C.bot?.actif ? ' ok' : '');
+  $('dettes').innerHTML = [...S.dettes].reverse().map(d => `<li class="dette ${d.done ? 'done' : ''}"><input type="checkbox" ${d.done ? 'checked' : ''} onchange="act('dette',{id:${d.id},done:this.checked})"><b>${d.cell}</b><span>${d.duo ? '🤝 ' : ''}${esc(d.text)} <small style="color:var(--mut)">— ${d.quand === 'prochain-live' ? 'prochain live' : 'au réveil'} · ${new Date(d.at).toLocaleString('fr-FR')}</small></span></li>`).join('') || '<li class="help">Aucune dette.</li>';
+  $('topAdmin').innerHTML = (S.top || []).map(p => `<li>${esc(p.nom)} — <b>${p.doublons}</b> doublons (${p.cases} case${p.cases > 1 ? 's' : ''})</li>`).join('') || '<li class="help">Personne encore.</li>';
+  renderJournal();
+}
+function renderJournal() {
+  $('journal').innerHTML = S.journal.slice(0, 40).map(j => `<li class="${j.type}"><b>${new Date(j.at).toLocaleTimeString('fr-FR')}</b> · ${esc(j.text)}</li>`).join('');
+}
+function esc(s) { return String(s ?? '').replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c])); }
+
+function connect() {
+  const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host);
+  ws.onopen = () => $('dWs').className = 'dot ok';
+  ws.onmessage = (m) => {
+    const d = JSON.parse(m.data);
+    if (d.ev === 'state') { S = d.state; C = { ...d.config }; render(); }
+    else if (d.ev === 'journal' && S) { S.journal.unshift(d.entry); renderJournal(); }
+    else if (d.ev === 'vote' && S?.round) { S.round.nbVotants = (S.round.nbVotants || 0); $('stVot').textContent = Object.keys(d.counts).length ? '≥' + Object.values(d.counts).reduce((a, b) => a + b, 0) : 0; }
+  };
+  ws.onclose = () => { $('dWs').className = 'dot'; setTimeout(connect, 2000); };
+  ws.onerror = () => ws.close();
+}
+for (const [k, v] of Object.entries(EFFETS)) $('tEffet').add(new Option(v.split(' — ')[0], k));
+connect(); loadConfig();
+</script>
+</body>
+</html>
