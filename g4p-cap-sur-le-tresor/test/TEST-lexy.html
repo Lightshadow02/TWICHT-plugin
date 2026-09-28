@@ -1,0 +1,411 @@
+<!doctype html><html lang='fr'><head><meta charset='utf-8'><title>Test widget G4P</title><style>@import url('https://fonts.googleapis.com/css2?family=Pirata+One&display=swap');
+:root {
+    --vert: #3dff4f;
+    --vert-moyen: #1fcf3a;
+    --vert-fonce: #0b5c1b;
+    --mer: #06240f;
+    --or: #f5c518;
+    --texte: #eaffea;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent !important; overflow: hidden; }
+  body { font-family: 'Pirata One', Georgia, serif; color: var(--texte); padding: 14px 20px; }
+
+  /* ---------- Cadre à coins coupés ---------- */
+  .cadre {
+    --coin: 22px;
+    position: relative;
+    padding: 3px;
+    background: linear-gradient(135deg, var(--vert), var(--vert-fonce) 45%, var(--vert) 100%);
+    clip-path: polygon(var(--coin) 0, calc(100% - var(--coin)) 0, 100% var(--coin), 100% calc(100% - var(--coin)),
+                       calc(100% - var(--coin)) 100%, var(--coin) 100%, 0 calc(100% - var(--coin)), 0 var(--coin));
+    filter: drop-shadow(0 0 8px rgba(61,255,79,.5));
+  }
+  .interieur {
+    position: relative;
+    clip-path: inherit;
+    padding: 12px 26px 10px;
+    background:
+      radial-gradient(ellipse at 50% 120%, rgba(61,255,79,.22), transparent 60%),
+      linear-gradient(180deg, #111711 0%, #0a120b 55%, var(--mer) 100%);
+    overflow: hidden;
+  }
+  .cadre.complet { background: linear-gradient(135deg, var(--or), #8a6400 45%, var(--or)); filter: drop-shadow(0 0 12px rgba(245,197,24,.6)); }
+
+  /* ---------- En-tête ---------- */
+  .entete { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; }
+  .titre {
+    flex: 1 1 auto; min-width: 0;
+    font-size: 36px; line-height: 1; color: var(--vert);
+    text-shadow: 0 0 10px rgba(61,255,79,.5), 2px 2px 0 #000;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .titre .boussole { display: inline-block; font-size: 30px; margin-right: 8px; animation: aiguille 6s ease-in-out infinite; }
+  @keyframes aiguille { 0%,100% { transform: rotate(-12deg); } 50% { transform: rotate(14deg); } }
+  .montant { font-size: 36px; line-height: 1; white-space: nowrap; text-shadow: 2px 2px 0 #000; }
+  .montant b { font-weight: normal; color: var(--or); text-shadow: 0 0 10px rgba(245,197,24,.5), 2px 2px 0 #000; }
+  .montant .sur { color: #a9cfa9; font-size: 28px; }
+
+  /* ---------- La mer ---------- */
+  .mer { position: relative; height: 104px; margin-top: 2px; }
+  .route { position: absolute; left: 50px; right: 165px; top: 0; bottom: 0; }
+
+  .vagues {
+    position: absolute; left: -60px; right: -60px; bottom: 0; height: 34px;
+    background-repeat: repeat-x;
+    background-size: 120px 34px;
+  }
+  .vagues.v1 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 34'%3E%3Cpath d='M0 12 Q30 2 60 12 T120 12 V34 H0Z' fill='%230e5a20'/%3E%3C/svg%3E");
+    animation: houle 7s linear infinite; opacity: .9;
+  }
+  .vagues.v2 {
+    height: 26px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 34'%3E%3Cpath d='M0 12 Q30 22 60 12 T120 12 V34 H0Z' fill='%23177a2c'/%3E%3Cpath d='M0 12 Q30 22 60 12 T120 12' fill='none' stroke='%233dff4f' stroke-width='2'/%3E%3C/svg%3E");
+    animation: houle 4.5s linear infinite reverse; z-index: 3;
+  }
+  @keyframes houle { to { background-position: 120px 0; } }
+
+  /* Bouées-paliers */
+  .bouee { position: absolute; bottom: 14px; width: 26px; margin-left: -6px; z-index: 2; animation: flotte 3s ease-in-out infinite; }
+  .bouee svg { display: block; width: 26px; height: 40px; }
+  .bouee .fanion { fill: #6c8f6c; transition: fill .4s; }
+  .bouee.atteint .fanion { fill: var(--or); }
+  .bouee.atteint { filter: drop-shadow(0 0 6px rgba(245,197,24,.8)); }
+  @keyframes flotte { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+
+  /* Navire */
+  .navire {
+    position: absolute; bottom: 8px; left: 0; width: 104px; margin-left: -52px; z-index: 2;
+    transition: left 1.6s cubic-bezier(.3,.8,.3,1);
+  }
+  .navire svg { display: block; width: 104px; height: 94px; transform-origin: 50% 85%; animation: tangage 3.2s ease-in-out infinite; }
+  @keyframes tangage {
+    0%,100% { transform: translateY(0) rotate(-3deg); }
+    50%     { transform: translateY(4px) rotate(3deg); }
+  }
+
+  /* Île + coffre */
+  .ile { position: absolute; right: -6px; bottom: 6px; width: 130px; height: 100px; z-index: 1; }
+  .ile svg { width: 100%; height: 100%; overflow: visible; }
+  .couvercle { transform-origin: 62px 62px; transition: transform .8s cubic-bezier(.3,1.6,.5,1); }
+  .complet .couvercle { transform: rotate(-38deg); }
+  .lueur { opacity: 0; transition: opacity .8s; }
+  .complet .lueur { opacity: 1; animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .55; } }
+
+  /* ---------- Tracé de carte sous la mer ---------- */
+  .carte { position: relative; height: 30px; margin: 0 165px 0 50px; }
+  .trace {
+    position: absolute; left: 0; right: 0; top: 7px; height: 0;
+    border-top: 3px dashed rgba(169,207,169,.35);
+  }
+  .parcouru {
+    position: absolute; left: 0; top: 6px; height: 5px; width: 0; border-radius: 3px;
+    background: linear-gradient(90deg, var(--vert-fonce), var(--vert));
+    box-shadow: 0 0 10px var(--vert);
+    transition: width 1.6s cubic-bezier(.3,.8,.3,1);
+  }
+  .complet .parcouru { background: linear-gradient(90deg, var(--vert), var(--or)); }
+  .etiquette {
+    position: absolute; top: 12px; transform: translateX(-50%);
+    font-size: 17px; color: #8fb58f; white-space: nowrap; text-shadow: 1px 1px 0 #000;
+  }
+  .etiquette.atteint { color: var(--or); }
+  .etiquette::before {
+    content: ""; position: absolute; left: 50%; top: -9px; width: 9px; height: 9px; margin-left: -4.5px;
+    border-radius: 50%; background: #2c3f2c; border: 2px solid #8fb58f;
+  }
+  .etiquette.atteint::before { background: var(--or); border-color: var(--or); box-shadow: 0 0 6px var(--or); }
+  .x-tresor {
+    position: absolute; right: -100px; top: -4px; font-size: 26px; line-height: 1; color: #c44;
+    text-shadow: 1px 1px 0 #000;
+  }
+  .complet .x-tresor { color: var(--or); }
+
+  /* ---------- Bas ---------- */
+  .prochain {
+    margin-top: 2px; font-size: 24px; line-height: 1.1; color: #cfe9cf; text-shadow: 2px 2px 0 #000;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .prochain .gold { color: var(--or); }
+
+  /* Effet palier franchi : éclaboussure dorée */
+  .cadre.flash .interieur::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at var(--fx, 50%) 70%, rgba(245,197,24,.45), transparent 40%);
+    animation: eclat 1.3s ease-out forwards;
+  }
+  @keyframes eclat { from { opacity: 1; } to { opacity: 0; } }
+
+/* ---------- Compteurs de gages récurrents ---------- */
+.compteurs { display: flex; gap: 8px; flex: 0 0 auto; align-self: center; }
+.compteur {
+  font-size: 22px; line-height: 1; padding: 4px 12px 5px; white-space: nowrap;
+  border: 2px solid rgba(61,255,79,.55); border-radius: 999px;
+  background: rgba(61,255,79,.08); text-shadow: 1px 1px 0 #000;
+}
+.compteur b { font-weight: normal; color: var(--or); }
+.compteur.pop { animation: pop .8s ease-out; }
+@keyframes pop { 25% { transform: scale(1.22); background: rgba(245,197,24,.35); border-color: var(--or); } }
+
+/* Paliers secondaires (loin du navire) plus discrets */
+.bouee.mini { margin-left: -4px; opacity: .75; }
+.bouee.mini svg { width: 17px; height: 27px; }
+.etiquette.cachee { color: transparent; text-shadow: none; }
+.etiquette.cachee::before { width: 7px; height: 7px; margin-left: -3.5px; top: -8px; }
+</style></head><body><!-- Réglages : tout se change dans l'onglet "Champs personnalisés", pas besoin de toucher ici -->
+<div id="config" hidden>
+  <div data-k="paliers">5 = Allumage du micro | 25 = Allumage de la cam | 50 = Tous les 10 €, je mange une baby carotte/radis/tomate cerise… via la roue des légumes (BEURK) | 75 = Je m'engage à faire Dark Souls 3 en entier | 100 = Défi « ne pas rire » (10 € par fail reversés à l'asso) | 150 = Voix d'animal dans My Voice Zoo (tous les paliers de 50 €) | 200 = Découverte de Alien: Isolation | 300 = Make up cagole CHANTAL | 400 = Coop Hold Your King avec une personne mystère de qualitey (hors event) | 500 = Je me mets aux lives musique avec la basse (hors event) | 600 = Live garanti (hors event) 100% sans « feur », di « … », « CMB », « c'est toi le » (gages si fail) | 666 = Exposé en PowerPoint sur le stérilet | 700 = Blind test au kazoo : un t-shirt de l'event à gagner (choisi par le vainqueur) | 800 = Live karaoké (hors event) | 900 = Mèche de cheveux RGB | 1000 = La chaîne devient Dame Lexy Comtesse de Winchester | 2000 = Je me fais tatouer un bouquet de feur | 2001 = Je dis du mal de Supernatural</div>
+  <div data-k="recurrents">10 = 🥕 Légumes dégueu | 50 = 🐾 Voix My Voice Zoo</div>
+  <div data-k="objectif">2001</div>
+  <div data-k="devise">€</div>
+  <div data-k="fin">2001 € : Lexy dit du mal de Supernatural 😱</div>
+  <div data-k="titre">Le trésor de Dame Lexy</div>
+  <div data-k="echelle">reguliere</div>
+</div>
+
+<div class="cadre" id="cadre">
+  <div class="interieur">
+    <div class="entete">
+      <span class="titre"><span class="boussole">🧭</span><span id="titre"></span></span>
+      <span class="compteurs" id="compteurs"></span>
+      <span class="montant"><b id="actuel">0</b> <span class="sur">/ <span id="total"></span></span></span>
+    </div>
+
+    <div class="mer">
+      <div class="vagues v1"></div>
+      <div class="route" id="route">
+        <div id="bouees"></div>
+        <div class="navire" id="navire">
+          <svg viewBox="0 0 104 94" aria-hidden="true">
+            <!-- mât + fanion -->
+            <line x1="52" y1="4" x2="52" y2="66" stroke="#4a2f16" stroke-width="3.5"/>
+            <path d="M52 4 L70 8 L52 13 Z" fill="#3dff4f"/>
+            <!-- voile -->
+            <path d="M26 16 Q52 10 78 16 Q84 38 78 58 Q52 52 26 58 Q20 38 26 16 Z" fill="#e6f3dc" stroke="#9fbf95" stroke-width="1.5"/>
+            <!-- emblème : tête de chien + os croisés -->
+            <g transform="translate(52 36)">
+              <path d="M-13 12 L13 -2 M-13 -2 L13 12" stroke="#0e5a20" stroke-width="4" stroke-linecap="round"/>
+              <ellipse cx="-11" cy="-6" rx="4.5" ry="8" fill="#0e5a20" transform="rotate(25 -11 -6)"/>
+              <ellipse cx="11" cy="-6" rx="4.5" ry="8" fill="#0e5a20" transform="rotate(-25 11 -6)"/>
+              <circle cx="0" cy="-4" r="9" fill="#0e5a20"/>
+              <circle cx="-3.5" cy="-6" r="2" fill="#e6f3dc"/>
+              <circle cx="3.5" cy="-6" r="2" fill="#e6f3dc"/>
+              <ellipse cx="0" cy="-0.5" rx="2.4" ry="1.7" fill="#e6f3dc"/>
+            </g>
+            <!-- coque -->
+            <path d="M6 62 L98 62 L88 82 Q52 90 16 82 Z" fill="#5a3a1e" stroke="#2e1d0d" stroke-width="2"/>
+            <path d="M10 68 L94 68" stroke="#f5c518" stroke-width="2.5"/>
+            <circle cx="30" cy="75" r="2.6" fill="#1b120a"/><circle cx="52" cy="76" r="2.6" fill="#1b120a"/><circle cx="74" cy="75" r="2.6" fill="#1b120a"/>
+          </svg>
+        </div>
+      </div>
+      <div class="ile">
+        <svg viewBox="0 0 130 100" aria-hidden="true">
+          <defs><radialGradient id="rg"><stop offset="0" stop-color="#ffd84a" stop-opacity=".75"/><stop offset="1" stop-color="#ffd84a" stop-opacity="0"/></radialGradient></defs>
+          <circle class="lueur" cx="64" cy="60" r="44" fill="url(#rg)"/>
+          <!-- palmier -->
+          <path d="M98 78 Q96 50 104 26" stroke="#6b4a24" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M104 26 Q86 16 72 26 Q88 22 104 28 Z" fill="#1fcf3a"/>
+          <path d="M104 26 Q122 14 130 28 Q118 22 104 28 Z" fill="#1fcf3a"/>
+          <path d="M104 26 Q100 8 86 6 Q100 14 103 28 Z" fill="#3dff4f"/>
+          <path d="M104 26 Q116 32 118 46 Q110 34 104 28 Z" fill="#169c2e"/>
+          <!-- sable -->
+          <ellipse cx="72" cy="86" rx="62" ry="14" fill="#d9b86a"/>
+          <ellipse cx="72" cy="83" rx="54" ry="9" fill="#e8cc86"/>
+          <!-- coffre -->
+          <rect x="44" y="62" width="40" height="20" rx="2" fill="#6b4220" stroke="#2e1d0d" stroke-width="2"/>
+          <rect x="44" y="70" width="40" height="3" fill="#f5c518"/>
+          <rect x="61" y="68" width="6" height="8" rx="1" fill="#f5c518" stroke="#8a6400"/>
+          <g class="couvercle">
+            <path d="M44 62 Q44 50 64 50 Q84 50 84 62 Z" fill="#7d4d25" stroke="#2e1d0d" stroke-width="2"/>
+            <path d="M47 57 Q64 52 81 57" stroke="#f5c518" stroke-width="2.5" fill="none"/>
+          </g>
+          <g class="lueur">
+            <circle cx="56" cy="60" r="4" fill="#f5c518"/><circle cx="64" cy="58" r="4" fill="#ffd84a"/><circle cx="72" cy="60" r="4" fill="#f5c518"/>
+          </g>
+        </svg>
+      </div>
+      <div class="vagues v2"></div>
+    </div>
+
+    <div class="carte">
+      <div class="trace"></div>
+      <div class="parcouru" id="parcouru"></div>
+      <div id="etiquettes"></div>
+      <span class="x-tresor">✕</span>
+    </div>
+
+    <div class="prochain" id="prochain"></div>
+  </div>
+</div>
+<script>/* ============================================================
+   G4P · TEAM CHIEN — "Cap sur le trésor" (widget Objectif Streamlabs)
+   Montant + objectif : viennent de Streamlabs.
+   Paliers, gages récurrents, devise… : onglet "Champs personnalisés".
+   ============================================================ */
+
+const $ = id => document.getElementById(id);
+
+// Lecture des champs personnalisés (un champ non rempli reste "{nom}" → ignoré)
+const CFG = {};
+document.querySelectorAll("#config [data-k]").forEach(el => {
+  const v = el.textContent.trim();
+  CFG[el.dataset.k] = /^\{\w+\}$/.test(v) ? "" : v;
+});
+
+const DEVISE = CFG.devise || "€";
+// Objectif forcé : s'il est rempli, il remplace celui envoyé par Streamlabs
+const OBJ_FORCE = parseFloat(String(CFG.objectif || "").replace(/\s/g, "").replace(",", ".")) || 0;
+const REGULIERE = (CFG.echelle || "reguliere") !== "proportionnelle";
+const fmt = n => Number(n).toLocaleString("fr-FR", { maximumFractionDigits: 2 });
+
+// "100 = Texte" ou "100€ - Texte", séparés par |
+function parser(txt) {
+  return String(txt || "").split(/\||\n/).map(l => {
+    const m = l.match(/^\s*(\d+(?:[.,]\d+)?)\s*€?\s*[:=\-–]\s*(.+?)\s*$/);
+    return m ? { montant: parseFloat(m[1].replace(",", ".")), texte: m[2] } : null;
+  }).filter(Boolean).sort((a, b) => a.montant - b.montant);
+}
+const PALIERS = parser(CFG.paliers);
+const RECURRENTS = parser(CFG.recurrents).filter(r => r.montant > 0);
+
+let etat = { titre: "", actuel: 0, objectif: OBJ_FORCE || 1 };
+let affiche = 0, anim = null, nbAvant = null, compteAvant = {};
+
+function compter(cible) {
+  cancelAnimationFrame(anim);
+  const depart = affiche, t0 = performance.now(), duree = 1400;
+  const pas = t => {
+    const k = Math.min(1, (t - t0) / duree), e = 1 - Math.pow(1 - k, 3);
+    affiche = depart + (cible - depart) * e;
+    $("actuel").textContent = fmt(Math.round(affiche * 100) / 100) + " " + DEVISE;
+    if (k < 1) anim = requestAnimationFrame(pas);
+  };
+  anim = requestAnimationFrame(pas);
+}
+
+// Position (0-100 %) d'un montant sur la route
+function position(v, obj, visibles) {
+  v = Math.max(0, Math.min(v, obj));
+  if (!REGULIERE) return v / obj * 100;
+  const n = [0, ...visibles.map(p => p.montant), obj];   // escales espacées régulièrement
+  for (let i = 0; i < n.length - 1; i++) {
+    if (v <= n[i + 1]) return (i + (v - n[i]) / (n[i + 1] - n[i])) / (n.length - 1) * 100;
+  }
+  return 100;
+}
+
+const drapeau = '<svg viewBox="0 0 26 40"><line x1="6" y1="2" x2="6" y2="34" stroke="#c9d9c9" stroke-width="2"/>' +
+  '<path class="fanion" d="M7 3 L24 9 L7 15 Z"/><ellipse cx="6" cy="34" rx="6" ry="4" fill="#c0392b"/>' +
+  '<rect x="0" y="32" width="12" height="2.5" fill="#fff"/></svg>';
+
+function rendre() {
+  const obj = Math.max(1, etat.objectif);
+  const complet = etat.actuel >= obj;
+  const visibles = PALIERS.filter(p => p.montant > 0 && p.montant < obj);
+  const pct = position(etat.actuel, obj, visibles);
+
+  $("titre").textContent = etat.titre || CFG.titre || "Cap sur le trésor";
+  $("total").textContent = fmt(obj) + " " + DEVISE;
+  $("navire").style.left = pct + "%";
+  $("parcouru").style.width = pct + "%";
+  compter(etat.actuel);
+
+  // Bouées : on met en avant le dernier palier atteint et les 3 suivants
+  const iSuivant = visibles.findIndex(p => p.montant > etat.actuel);
+  const debut = iSuivant === -1 ? visibles.length - 1 : iSuivant - 1;
+  const b = $("bouees"), et = $("etiquettes");
+  b.innerHTML = ""; et.innerHTML = "";
+  visibles.forEach((p, i) => {
+    const pos = position(p.montant, obj, visibles), ok = etat.actuel >= p.montant;
+    const proche = visibles.length <= 6 || (i >= debut && i <= debut + 3);
+    const d = document.createElement("div");
+    d.className = "bouee" + (ok ? " atteint" : "") + (proche ? "" : " mini");
+    d.style.left = pos + "%";
+    d.style.animationDelay = (-i * 0.7) + "s";
+    d.innerHTML = drapeau;
+    b.appendChild(d);
+    const e = document.createElement("span");
+    e.className = "etiquette" + (ok ? " atteint" : "") + (proche ? "" : " cachee");
+    e.style.left = pos + "%";
+    e.textContent = fmt(p.montant) + " " + DEVISE;
+    et.appendChild(e);
+  });
+
+  // Texte du bas
+  const suivant = PALIERS.find(p => p.montant > etat.actuel && p.montant <= obj);
+  const txt = $("prochain");
+  txt.textContent = "";
+  const gold = s => { const g = document.createElement("span"); g.className = "gold"; g.textContent = s; return g; };
+  if (complet) {
+    txt.append(gold("Trésor trouvé ! "), CFG.fin || "Merci à tout l'équipage 🐾");
+  } else if (suivant) {
+    txt.append("Prochaine escale · ", gold(fmt(suivant.montant) + " " + DEVISE), " — " + suivant.texte);
+  } else {
+    txt.append("Plus que ", gold(fmt(obj - etat.actuel) + " " + DEVISE), " avant le trésor");
+  }
+
+  // Compteurs de gages récurrents ("tous les 10 €…")
+  const zone = $("compteurs");
+  zone.innerHTML = "";
+  RECURRENTS.forEach(r => {
+    const n = Math.floor(etat.actuel / r.montant);
+    const c = document.createElement("span");
+    c.className = "compteur";
+    c.append(r.texte + " ");
+    const v = document.createElement("b"); v.textContent = "×" + n; c.append(v);
+    if (compteAvant[r.texte] !== undefined && n > compteAvant[r.texte]) c.classList.add("pop");
+    compteAvant[r.texte] = n;
+    zone.appendChild(c);
+  });
+
+  const cadre = $("cadre");
+  cadre.classList.toggle("complet", complet);
+  const nb = PALIERS.filter(p => etat.actuel >= p.montant).length + (complet ? 1 : 0);
+  if (nbAvant !== null && nb > nbAvant) {
+    cadre.style.setProperty("--fx", (5 + pct * 0.8) + "%");
+    cadre.classList.remove("flash"); void cadre.offsetWidth; cadre.classList.add("flash");
+  }
+  nbAvant = nb;
+}
+
+function lire(d) {
+  if (!d) return;
+  if (d.title !== undefined) etat.titre = d.title;
+  if (d.amount) {
+    if (d.amount.current !== undefined) etat.actuel = parseFloat(d.amount.current) || 0;
+    if (d.amount.target !== undefined) etat.objectif = parseFloat(d.amount.target) || 1;
+  }
+  if (OBJ_FORCE > 0) etat.objectif = OBJ_FORCE;
+  rendre();
+}
+
+document.addEventListener("goalLoad", e => lire(e.detail));   // chargement du widget
+document.addEventListener("goalEvent", e => lire(e.detail));  // nouveau don
+
+rendre();
+</script>
+<div id="testeur" style="position:fixed;left:0;right:0;bottom:0;padding:12px 20px;background:#1b1f1b;border-top:2px solid #3dff4f;font:14px system-ui;color:#eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+  <b style="color:#3dff4f;margin-right:6px">Simulateur Streamlabs</b>
+  Objectif <input id="t-obj" type="number" value="2001" style="width:70px">
+  <button onclick="tLoad()">Charger</button>
+  <span style="margin-left:10px">Don :</span>
+  <button onclick="tDon(5)">+5</button><button onclick="tDon(10)">+10</button>
+  <button onclick="tDon(50)">+50</button><button onclick="tDon(100)">+100</button><button onclick="tDon(500)">+500</button>
+  <button onclick="tCur=0;tLoad()">Remise à zéro</button>
+  <button onclick="tCur=Number(document.getElementById('t-obj').value);tDon(0)">Objectif atteint</button>
+  <span id="t-info" style="margin-left:auto;color:#aaa"></span>
+</div>
+<style>#testeur button{font:600 13px system-ui;padding:5px 10px;border-radius:6px;border:1px solid #1fcf3a;background:#143a1a;color:#fff;cursor:pointer}
+#testeur input{font:13px system-ui;padding:4px;border-radius:6px;border:1px solid #3a4a3a;background:#0c100c;color:#fff}
+body{background:#2a2a2a!important;min-height:100vh}</style>
+<script>
+let tCur=0;
+function det(){return {title:"Le trésor de Dame Lexy",amount:{current:tCur,target:Number(document.getElementById('t-obj').value)||500}}}
+function tLoad(){document.dispatchEvent(new CustomEvent('goalLoad',{detail:det()}));info()}
+function tDon(n){tCur+=n;document.dispatchEvent(new CustomEvent('goalEvent',{detail:det()}));info()}
+function info(){document.getElementById('t-info').textContent='Envoyé : '+tCur+' / '+det().amount.target}
+tLoad();
+</script></body></html>

@@ -1,0 +1,86 @@
+<!-- Réglages : tout se change dans l'onglet "Champs personnalisés", pas besoin de toucher ici -->
+<div id="config" hidden>
+  <div data-k="paliers">{paliers}</div>
+  <div data-k="recurrents">{recurrents}</div>
+  <div data-k="objectif">{objectif}</div>
+  <div data-k="devise">{devise}</div>
+  <div data-k="fin">{texteFin}</div>
+  <div data-k="titre">{titreParDefaut}</div>
+  <div data-k="echelle">{echelle}</div>
+</div>
+
+<div class="cadre" id="cadre">
+  <div class="interieur">
+    <div class="entete">
+      <span class="titre"><span class="boussole">🧭</span><span id="titre"></span></span>
+      <span class="compteurs" id="compteurs"></span>
+      <span class="montant"><b id="actuel">0</b> <span class="sur">/ <span id="total"></span></span></span>
+    </div>
+
+    <div class="mer">
+      <div class="vagues v1"></div>
+      <div class="route" id="route">
+        <div id="bouees"></div>
+        <div class="navire" id="navire">
+          <svg viewBox="0 0 104 94" aria-hidden="true">
+            <!-- mât + fanion -->
+            <line x1="52" y1="4" x2="52" y2="66" stroke="#4a2f16" stroke-width="3.5"/>
+            <path d="M52 4 L70 8 L52 13 Z" fill="#3dff4f"/>
+            <!-- voile -->
+            <path d="M26 16 Q52 10 78 16 Q84 38 78 58 Q52 52 26 58 Q20 38 26 16 Z" fill="#e6f3dc" stroke="#9fbf95" stroke-width="1.5"/>
+            <!-- emblème : tête de chien + os croisés -->
+            <g transform="translate(52 36)">
+              <path d="M-13 12 L13 -2 M-13 -2 L13 12" stroke="#0e5a20" stroke-width="4" stroke-linecap="round"/>
+              <ellipse cx="-11" cy="-6" rx="4.5" ry="8" fill="#0e5a20" transform="rotate(25 -11 -6)"/>
+              <ellipse cx="11" cy="-6" rx="4.5" ry="8" fill="#0e5a20" transform="rotate(-25 11 -6)"/>
+              <circle cx="0" cy="-4" r="9" fill="#0e5a20"/>
+              <circle cx="-3.5" cy="-6" r="2" fill="#e6f3dc"/>
+              <circle cx="3.5" cy="-6" r="2" fill="#e6f3dc"/>
+              <ellipse cx="0" cy="-0.5" rx="2.4" ry="1.7" fill="#e6f3dc"/>
+            </g>
+            <!-- coque -->
+            <path d="M6 62 L98 62 L88 82 Q52 90 16 82 Z" fill="#5a3a1e" stroke="#2e1d0d" stroke-width="2"/>
+            <path d="M10 68 L94 68" stroke="#f5c518" stroke-width="2.5"/>
+            <circle cx="30" cy="75" r="2.6" fill="#1b120a"/><circle cx="52" cy="76" r="2.6" fill="#1b120a"/><circle cx="74" cy="75" r="2.6" fill="#1b120a"/>
+          </svg>
+        </div>
+      </div>
+      <div class="ile">
+        <svg viewBox="0 0 130 100" aria-hidden="true">
+          <defs><radialGradient id="rg"><stop offset="0" stop-color="#ffd84a" stop-opacity=".75"/><stop offset="1" stop-color="#ffd84a" stop-opacity="0"/></radialGradient></defs>
+          <circle class="lueur" cx="64" cy="60" r="44" fill="url(#rg)"/>
+          <!-- palmier -->
+          <path d="M98 78 Q96 50 104 26" stroke="#6b4a24" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M104 26 Q86 16 72 26 Q88 22 104 28 Z" fill="#1fcf3a"/>
+          <path d="M104 26 Q122 14 130 28 Q118 22 104 28 Z" fill="#1fcf3a"/>
+          <path d="M104 26 Q100 8 86 6 Q100 14 103 28 Z" fill="#3dff4f"/>
+          <path d="M104 26 Q116 32 118 46 Q110 34 104 28 Z" fill="#169c2e"/>
+          <!-- sable -->
+          <ellipse cx="72" cy="86" rx="62" ry="14" fill="#d9b86a"/>
+          <ellipse cx="72" cy="83" rx="54" ry="9" fill="#e8cc86"/>
+          <!-- coffre -->
+          <rect x="44" y="62" width="40" height="20" rx="2" fill="#6b4220" stroke="#2e1d0d" stroke-width="2"/>
+          <rect x="44" y="70" width="40" height="3" fill="#f5c518"/>
+          <rect x="61" y="68" width="6" height="8" rx="1" fill="#f5c518" stroke="#8a6400"/>
+          <g class="couvercle">
+            <path d="M44 62 Q44 50 64 50 Q84 50 84 62 Z" fill="#7d4d25" stroke="#2e1d0d" stroke-width="2"/>
+            <path d="M47 57 Q64 52 81 57" stroke="#f5c518" stroke-width="2.5" fill="none"/>
+          </g>
+          <g class="lueur">
+            <circle cx="56" cy="60" r="4" fill="#f5c518"/><circle cx="64" cy="58" r="4" fill="#ffd84a"/><circle cx="72" cy="60" r="4" fill="#f5c518"/>
+          </g>
+        </svg>
+      </div>
+      <div class="vagues v2"></div>
+    </div>
+
+    <div class="carte">
+      <div class="trace"></div>
+      <div class="parcouru" id="parcouru"></div>
+      <div id="etiquettes"></div>
+      <span class="x-tresor">✕</span>
+    </div>
+
+    <div class="prochain" id="prochain"></div>
+  </div>
+</div>
