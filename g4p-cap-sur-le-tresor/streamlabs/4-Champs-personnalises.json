@@ -1,0 +1,41 @@
+{
+  "paliers": {
+    "label": "Paliers (montant = texte, séparés par | )",
+    "type": "textfield",
+    "value": "100 = Premier palier | 250 = Deuxième palier | 400 = Troisième palier"
+  },
+  "objectif": {
+    "label": "Objectif final en € (laisser vide = celui de Streamlabs)",
+    "type": "textfield",
+    "value": ""
+  },
+  "recurrents": {
+    "label": "Gages récurrents (tous les X € = nom du compteur)",
+    "type": "textfield",
+    "value": ""
+  },
+  "echelle": {
+    "label": "Espacement des paliers",
+    "type": "dropdown",
+    "options": {
+      "reguliere": "Régulier (conseillé quand il y a beaucoup de paliers)",
+      "proportionnelle": "Proportionnel au montant"
+    },
+    "value": "reguliere"
+  },
+  "devise": {
+    "label": "Devise",
+    "type": "textfield",
+    "value": "€"
+  },
+  "texteFin": {
+    "label": "Texte quand l'objectif est atteint",
+    "type": "textfield",
+    "value": "Merci à tout l'équipage 🐾"
+  },
+  "titreParDefaut": {
+    "label": "Titre si l'objectif Streamlabs n'a pas de titre",
+    "type": "textfield",
+    "value": "Cap sur le trésor"
+  }
+}

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Cap sur le trésor – G4P Team Chien</title>
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&display=swap" rel="stylesheet">
+<!--
+  ============================================================
+   OBJECTIF DE DONS "CAP SUR LE TRÉSOR" — GAMERS4PETS · TEAM CHIEN
+  ============================================================
+   Le navire avance vers l'île au trésor au fil des dons.
+   Chaque palier = une bouée-drapeau sur la mer.
+   Objectif atteint = le coffre s'ouvre.
+
+   Dans OBS : Sources > + > Navigateur > "Fichier local"
+   Taille : 1200 x 270
+
+   Pour modifier (au choix) :
+     1) Le bloc CONFIG dans le <script> plus bas
+     2) L'URL : ...html?actuel=120&objectif=500&titre=Cap%20sur%20le%20trésor
+                paliers : &paliers=100:Micro|250:Cam|400:Karaoké
+     3) En live : clic droit sur la source > "Interagir"
+        puis double-clic sur le cadre (ou touche E) → panneau de réglages.
+        Les valeurs restent enregistrées après redémarrage d'OBS.
+  ============================================================
+-->
+<style>
+  :root {
+    --vert: #3dff4f;
+    --vert-moyen: #1fcf3a;
+    --vert-fonce: #0b5c1b;
+    --mer: #06240f;
+    --or: #f5c518;
+    --texte: #eaffea;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; overflow: hidden; }
+  body { font-family: 'Pirata One', Georgia, serif; color: var(--texte); padding: 14px 20px; }
+
+  /* ---------- Cadre à coins coupés ---------- */
+  .cadre {
+    --coin: 22px;
+    position: relative;
+    padding: 3px;
+    background: linear-gradient(135deg, var(--vert), var(--vert-fonce) 45%, var(--vert) 100%);
+    clip-path: polygon(var(--coin) 0, calc(100% - var(--coin)) 0, 100% var(--coin), 100% calc(100% - var(--coin)),
+                       calc(100% - var(--coin)) 100%, var(--coin) 100%, 0 calc(100% - var(--coin)), 0 var(--coin));
+    filter: drop-shadow(0 0 8px rgba(61,255,79,.5));
+  }
+  .interieur {
+    position: relative;
+    clip-path: inherit;
+    padding: 12px 26px 10px;
+    background:
+      radial-gradient(ellipse at 50% 120%, rgba(61,255,79,.22), transparent 60%),
+      linear-gradient(180deg, #111711 0%, #0a120b 55%, var(--mer) 100%);
+    overflow: hidden;
+  }
+  .cadre.complet { background: linear-gradient(135deg, var(--or), #8a6400 45%, var(--or)); filter: drop-shadow(0 0 12px rgba(245,197,24,.6)); }
+
+  /* ---------- En-tête ---------- */
+  .entete { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; }
+  .titre {
+    font-size: 36px; line-height: 1; color: var(--vert);
+    text-shadow: 0 0 10px rgba(61,255,79,.5), 2px 2px 0 #000;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .titre .boussole { display: inline-block; font-size: 30px; margin-right: 8px; animation: aiguille 6s ease-in-out infinite; }
+  @keyframes aiguille { 0%,100% { transform: rotate(-12deg); } 50% { transform: rotate(14deg); } }
+  .montant { font-size: 36px; line-height: 1; white-space: nowrap; text-shadow: 2px 2px 0 #000; }
+  .montant b { font-weight: normal; color: var(--or); text-shadow: 0 0 10px rgba(245,197,24,.5), 2px 2px 0 #000; }
+  .montant .sur { color: #a9cfa9; font-size: 28px; }
+
+  /* ---------- La mer ---------- */
+  .mer { position: relative; height: 104px; margin-top: 2px; }
+  .route { position: absolute; left: 50px; right: 165px; top: 0; bottom: 0; }
+
+  .vagues {
+    position: absolute; left: -60px; right: -60px; bottom: 0; height: 34px;
+    background-repeat: repeat-x;
+    background-size: 120px 34px;
+  }
+  .vagues.v1 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 34'%3E%3Cpath d='M0 12 Q30 2 60 12 T120 12 V34 H0Z' fill='%230e5a20'/%3E%3C/svg%3E");
+    animation: houle 7s linear infinite; opacity: .9;
+  }
+  .vagues.v2 {
+    height: 26px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 34'%3E%3Cpath d='M0 12 Q30 22 60 12 T120 12 V34 H0Z' fill='%23177a2c'/%3E%3Cpath d='M0 12 Q30 22 60 12 T120 12' fill='none' stroke='%233dff4f' stroke-width='2'/%3E%3C/svg%3E");
+    animation: houle 4.5s linear infinite reverse; z-index: 3;
+  }
+  @keyframes houle { to { background-position: 120px 0; } }
+
+  /* Bouées-paliers */
+  .bouee { position: absolute; bottom: 14px; width: 26px; margin-left: -6px; z-index: 2; animation: flotte 3s ease-in-out infinite; }
+  .bouee svg { display: block; width: 26px; height: 40px; }
+  .bouee .fanion { fill: #6c8f6c; transition: fill .4s; }
+  .bouee.atteint .fanion { fill: var(--or); }
+  .bouee.atteint { filter: drop-shadow(0 0 6px rgba(245,197,24,.8)); }
+  @keyframes flotte { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+
+  /* Navire */
+  .navire {
+    position: absolute; bottom: 8px; left: 0; width: 104px; margin-left: -52px; z-index: 2;
+    transition: left 1.6s cubic-bezier(.3,.8,.3,1);
+  }
+  .navire svg { display: block; width: 104px; height: 94px; transform-origin: 50% 85%; animation: tangage 3.2s ease-in-out infinite; }
+  @keyframes tangage {
+    0%,100% { transform: translateY(0) rotate(-3deg); }
+    50%     { transform: translateY(4px) rotate(3deg); }
+  }
+
+  /* Île + coffre */
+  .ile { position: absolute; right: -6px; bottom: 6px; width: 130px; height: 100px; z-index: 1; }
+  .ile svg { width: 100%; height: 100%; overflow: visible; }
+  .couvercle { transform-origin: 62px 62px; transition: transform .8s cubic-bezier(.3,1.6,.5,1); }
+  .complet .couvercle { transform: rotate(-38deg); }
+  .lueur { opacity: 0; transition: opacity .8s; }
+  .complet .lueur { opacity: 1; animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .55; } }
+
+  /* ---------- Tracé de carte sous la mer ---------- */
+  .carte { position: relative; height: 30px; margin: 0 165px 0 50px; }
+  .trace {
+    position: absolute; left: 0; right: 0; top: 7px; height: 0;
+    border-top: 3px dashed rgba(169,207,169,.35);
+  }
+  .parcouru {
+    position: absolute; left: 0; top: 6px; height: 5px; width: 0; border-radius: 3px;
+    background: linear-gradient(90deg, var(--vert-fonce), var(--vert));
+    box-shadow: 0 0 10px var(--vert);
+    transition: width 1.6s cubic-bezier(.3,.8,.3,1);
+  }
+  .complet .parcouru { background: linear-gradient(90deg, var(--vert), var(--or)); }
+  .etiquette {
+    position: absolute; top: 12px; transform: translateX(-50%);
+    font-size: 17px; color: #8fb58f; white-space: nowrap; text-shadow: 1px 1px 0 #000;
+  }
+  .etiquette.atteint { color: var(--or); }
+  .etiquette::before {
+    content: ""; position: absolute; left: 50%; top: -9px; width: 9px; height: 9px; margin-left: -4.5px;
+    border-radius: 50%; background: #2c3f2c; border: 2px solid #8fb58f;
+  }
+  .etiquette.atteint::before { background: var(--or); border-color: var(--or); box-shadow: 0 0 6px var(--or); }
+  .x-tresor {
+    position: absolute; right: -100px; top: -4px; font-size: 26px; line-height: 1; color: #c44;
+    text-shadow: 1px 1px 0 #000;
+  }
+  .complet .x-tresor { color: var(--or); }
+
+  /* ---------- Bas ---------- */
+  .prochain {
+    margin-top: 2px; font-size: 24px; line-height: 1.1; color: #cfe9cf; text-shadow: 2px 2px 0 #000;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .prochain .gold { color: var(--or); }
+
+  /* Effet palier franchi : éclaboussure dorée */
+  .cadre.flash .interieur::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at var(--fx, 50%) 70%, rgba(245,197,24,.45), transparent 40%);
+    animation: eclat 1.3s ease-out forwards;
+  }
+  @keyframes eclat { from { opacity: 1; } to { opacity: 0; } }
+
+  /* ---------- Panneau de réglages ---------- */
+  .panneau {
+    position: fixed; inset: 0; z-index: 10; background: rgba(8,12,8,.97);
+    border: 2px solid var(--vert); padding: 10px 14px;
+    font: 13px/1.3 system-ui, sans-serif; color: #eee;
+    display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 8px 16px; overflow: auto;
+  }
+  .panneau[hidden] { display: none; }
+  .panneau h3 { grid-column: 1 / -1; font: 700 14px system-ui; color: var(--vert); }
+  .panneau label { display: flex; flex-direction: column; gap: 2px; font-weight: 600; }
+  .panneau input, .panneau textarea {
+    font: 13px system-ui; padding: 4px 6px; border-radius: 6px;
+    border: 1px solid #3a4a3a; background: #0c100c; color: #fff; resize: none;
+  }
+  .panneau .col { display: flex; flex-direction: column; gap: 6px; }
+  .panneau button {
+    font: 600 13px system-ui; padding: 5px 10px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--vert-moyen); background: #143a1a; color: #fff;
+  }
+  .panneau button:hover { background: #1e5a27; }
+  .rapide { display: flex; gap: 4px; }
+  .rapide button { flex: 1; padding: 4px 0; }
+</style>
+</head>
+<body>
+
+<div class="cadre" id="cadre">
+  <div class="interieur">
+    <div class="entete">
+      <span class="titre"><span class="boussole">🧭</span><span id="titre"></span></span>
+      <span class="montant"><b id="actuel">0</b> <span class="sur">/ <span id="total"></span></span></span>
+    </div>
+
+    <div class="mer">
+      <div class="vagues v1"></div>
+      <div class="route" id="route">
+        <div id="bouees"></div>
+        <div class="navire" id="navire">
+          <svg viewBox="0 0 104 94" aria-hidden="true">
+            <!-- mât + fanion -->
+            <line x1="52" y1="4" x2="52" y2="66" stroke="#4a2f16" stroke-width="3.5"/>
+            <path d="M52 4 L70 8 L52 13 Z" fill="#3dff4f"/>
+            <!-- voile -->
+            <path d="M26 16 Q52 10 78 16 Q84 38 78 58 Q52 52 26 58 Q20 38 26 16 Z" fill="#e6f3dc" stroke="#9fbf95" stroke-width="1.5"/>
+            <!-- emblème : tête de chien + os croisés -->
+            <g transform="translate(52 36)">
+              <path d="M-13 12 L13 -2 M-13 -2 L13 12" stroke="#0e5a20" stroke-width="4" stroke-linecap="round"/>
+              <ellipse cx="-11" cy="-6" rx="4.5" ry="8" fill="#0e5a20" transform="rotate(25 -11 -6)"/>
+              <ellipse cx="11" cy="-6" rx="4.5" ry="8" fill="#0e5a20" transform="rotate(-25 11 -6)"/>
+              <circle cx="0" cy="-4" r="9" fill="#0e5a20"/>
+              <circle cx="-3.5" cy="-6" r="2" fill="#e6f3dc"/>
+              <circle cx="3.5" cy="-6" r="2" fill="#e6f3dc"/>
+              <ellipse cx="0" cy="-0.5" rx="2.4" ry="1.7" fill="#e6f3dc"/>
+            </g>
+            <!-- coque -->
+            <path d="M6 62 L98 62 L88 82 Q52 90 16 82 Z" fill="#5a3a1e" stroke="#2e1d0d" stroke-width="2"/>
+            <path d="M10 68 L94 68" stroke="#f5c518" stroke-width="2.5"/>
+            <circle cx="30" cy="75" r="2.6" fill="#1b120a"/><circle cx="52" cy="76" r="2.6" fill="#1b120a"/><circle cx="74" cy="75" r="2.6" fill="#1b120a"/>
+          </svg>
+        </div>
+      </div>
+      <div class="ile">
+        <svg viewBox="0 0 130 100" aria-hidden="true">
+          <defs><radialGradient id="rg"><stop offset="0" stop-color="#ffd84a" stop-opacity=".75"/><stop offset="1" stop-color="#ffd84a" stop-opacity="0"/></radialGradient></defs>
+          <circle class="lueur" cx="64" cy="60" r="44" fill="url(#rg)"/>
+          <!-- palmier -->
+          <path d="M98 78 Q96 50 104 26" stroke="#6b4a24" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M104 26 Q86 16 72 26 Q88 22 104 28 Z" fill="#1fcf3a"/>
+          <path d="M104 26 Q122 14 130 28 Q118 22 104 28 Z" fill="#1fcf3a"/>
+          <path d="M104 26 Q100 8 86 6 Q100 14 103 28 Z" fill="#3dff4f"/>
+          <path d="M104 26 Q116 32 118 46 Q110 34 104 28 Z" fill="#169c2e"/>
+          <!-- sable -->
+          <ellipse cx="72" cy="86" rx="62" ry="14" fill="#d9b86a"/>
+          <ellipse cx="72" cy="83" rx="54" ry="9" fill="#e8cc86"/>
+          <!-- coffre -->
+          <rect x="44" y="62" width="40" height="20" rx="2" fill="#6b4220" stroke="#2e1d0d" stroke-width="2"/>
+          <rect x="44" y="70" width="40" height="3" fill="#f5c518"/>
+          <rect x="61" y="68" width="6" height="8" rx="1" fill="#f5c518" stroke="#8a6400"/>
+          <g class="couvercle">
+            <path d="M44 62 Q44 50 64 50 Q84 50 84 62 Z" fill="#7d4d25" stroke="#2e1d0d" stroke-width="2"/>
+            <path d="M47 57 Q64 52 81 57" stroke="#f5c518" stroke-width="2.5" fill="none"/>
+          </g>
+          <g class="lueur">
+            <circle cx="56" cy="60" r="4" fill="#f5c518"/><circle cx="64" cy="58" r="4" fill="#ffd84a"/><circle cx="72" cy="60" r="4" fill="#f5c518"/>
+          </g>
+        </svg>
+      </div>
+      <div class="vagues v2"></div>
+    </div>
+
+    <div class="carte">
+      <div class="trace"></div>
+      <div class="parcouru" id="parcouru"></div>
+      <div id="etiquettes"></div>
+      <span class="x-tresor">✕</span>
+    </div>
+
+    <div class="prochain" id="prochain"></div>
+  </div>
+</div>
+
+<div class="panneau" id="panneau" hidden>
+  <h3>Réglages (double-clic ou touche E pour fermer)</h3>
+  <div class="col">
+    <label>Titre <input id="i-titre"></label>
+    <label>Montant actuel <input id="i-actuel" type="number" step="0.01"></label>
+    <div class="rapide">
+      <button data-plus="1">+1</button><button data-plus="5">+5</button>
+      <button data-plus="10">+10</button><button data-plus="50">+50</button>
+    </div>
+    <label>Objectif final <input id="i-objectif" type="number" step="1"></label>
+  </div>
+  <label>Paliers (un par ligne : 100 = texte du palier)
+    <textarea id="i-paliers" rows="6"></textarea>
+  </label>
+  <div class="col">
+    <button id="b-ok">Enregistrer</button>
+    <button id="b-reset">Réinitialiser</button>
+    <button id="b-fermer">Fermer</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — c'est ici que chaque streamer modifie sa barre
+   ============================================================ */
+const CONFIG = {
+  titre: "Cap sur le trésor",
+  actuel: 180,          // montant récolté
+  objectif: 500,        // montant du trésor (fin de la route)
+  devise: "€",
+  // Paliers = bouées sur la mer. Laisser [] pour aucun palier.
+  paliers: [
+    { montant: 100, texte: "Premier palier" },
+    { montant: 250, texte: "Deuxième palier" },
+    { montant: 400, texte: "Troisième palier" },
+  ],
+};
+/* ============================================================ */
+
+const $ = id => document.getElementById(id);
+const CLE = "g4p-cap-tresor-chien";
+const fmt = n => Number(n).toLocaleString("fr-FR", { maximumFractionDigits: 2 });
+
+function parserPaliers(lignes) {
+  return lignes.map(l => {
+    const m = String(l).match(/^\s*(\d+(?:[.,]\d+)?)\s*[:=\-]\s*(.+)$/);
+    return m ? { montant: parseFloat(m[1].replace(",", ".")), texte: m[2].trim() } : null;
+  }).filter(Boolean);
+}
+function lireURL() {
+  const p = new URLSearchParams(location.search), o = {};
+  if (p.has("actuel"))   o.actuel = parseFloat(p.get("actuel")) || 0;
+  if (p.has("objectif")) o.objectif = parseFloat(p.get("objectif")) || 1;
+  if (p.has("titre"))    o.titre = p.get("titre");
+  if (p.has("devise"))   o.devise = p.get("devise");
+  if (p.has("paliers"))  o.paliers = parserPaliers(p.get("paliers").split("|"));
+  return o;
+}
+function lireSauvegarde() { try { return JSON.parse(localStorage.getItem(CLE)) || {}; } catch (e) { return {}; } }
+function sauver() { try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch (e) {} }
+
+let etat = Object.assign({}, CONFIG, lireURL(), lireSauvegarde());
+
+let affiche = 0, anim = null, nbAvant = null;
+function compter(cible) {
+  cancelAnimationFrame(anim);
+  const depart = affiche, t0 = performance.now(), duree = 1400;
+  const pas = t => {
+    const k = Math.min(1, (t - t0) / duree), e = 1 - Math.pow(1 - k, 3);
+    affiche = depart + (cible - depart) * e;
+    $("actuel").textContent = fmt(Math.round(affiche * 100) / 100) + " " + etat.devise;
+    if (k < 1) anim = requestAnimationFrame(pas);
+  };
+  anim = requestAnimationFrame(pas);
+}
+
+const drapeau = '<svg viewBox="0 0 26 40"><line x1="6" y1="2" x2="6" y2="34" stroke="#c9d9c9" stroke-width="2"/>' +
+  '<path class="fanion" d="M7 3 L24 9 L7 15 Z"/><ellipse cx="6" cy="34" rx="6" ry="4" fill="#c0392b"/>' +
+  '<rect x="0" y="32" width="12" height="2.5" fill="#fff"/></svg>';
+
+function rendre() {
+  const obj = Math.max(1, etat.objectif);
+  const pct = Math.min(100, Math.max(0, etat.actuel / obj * 100));
+  const paliers = [...(etat.paliers || [])].sort((a, b) => a.montant - b.montant);
+  const complet = etat.actuel >= obj;
+
+  $("titre").textContent = etat.titre;
+  $("total").textContent = fmt(obj) + " " + etat.devise;
+  $("navire").style.left = pct + "%";
+  $("parcouru").style.width = pct + "%";
+  compter(etat.actuel);
+
+  const b = $("bouees"), et = $("etiquettes");
+  b.innerHTML = ""; et.innerHTML = "";
+  paliers.filter(p => p.montant > 0 && p.montant < obj).forEach((p, i) => {
+    const pos = p.montant / obj * 100, ok = etat.actuel >= p.montant;
+    const d = document.createElement("div");
+    d.className = "bouee" + (ok ? " atteint" : "");
+    d.style.left = pos + "%";
+    d.style.animationDelay = (-i * 0.7) + "s";
+    d.innerHTML = drapeau;
+    b.appendChild(d);
+    const e = document.createElement("span");
+    e.className = "etiquette" + (ok ? " atteint" : "");
+    e.style.left = pos + "%";
+    e.textContent = fmt(p.montant) + " " + etat.devise;
+    et.appendChild(e);
+  });
+
+  const suivant = paliers.find(p => p.montant > etat.actuel && p.montant < obj);
+  const txt = $("prochain");
+  if (complet) {
+    txt.innerHTML = '<span class="gold">Trésor trouvé !</span> Merci à tout l\'équipage 🐾';
+  } else if (suivant) {
+    txt.innerHTML = 'Prochaine escale · <span class="gold">' + fmt(suivant.montant) + " " + etat.devise + "</span> — ";
+    txt.append(suivant.texte);
+  } else {
+    txt.innerHTML = 'Plus que <span class="gold">' + fmt(obj - etat.actuel) + " " + etat.devise + "</span> avant le trésor";
+  }
+
+  const cadre = $("cadre");
+  cadre.classList.toggle("complet", complet);
+  const nb = paliers.filter(p => etat.actuel >= p.montant).length + (complet ? 1 : 0);
+  if (nbAvant !== null && nb > nbAvant) {
+    cadre.style.setProperty("--fx", (5 + pct * 0.8) + "%");
+    cadre.classList.remove("flash"); void cadre.offsetWidth; cadre.classList.add("flash");
+  }
+  nbAvant = nb;
+}
+
+/* ---------- Panneau de réglages ---------- */
+const panneau = $("panneau");
+function remplirPanneau() {
+  $("i-titre").value = etat.titre;
+  $("i-actuel").value = etat.actuel;
+  $("i-objectif").value = etat.objectif;
+  $("i-paliers").value = (etat.paliers || []).map(p => p.montant + " = " + p.texte).join("\n");
+}
+function basculer() { panneau.hidden = !panneau.hidden; if (!panneau.hidden) remplirPanneau(); }
+function appliquer() {
+  etat.titre = $("i-titre").value || CONFIG.titre;
+  etat.actuel = parseFloat($("i-actuel").value) || 0;
+  etat.objectif = parseFloat($("i-objectif").value) || 1;
+  etat.paliers = parserPaliers($("i-paliers").value.split("\n"));
+  sauver(); rendre();
+}
+$("cadre").addEventListener("dblclick", basculer);
+panneau.addEventListener("dblclick", e => { if (e.target === panneau) basculer(); });
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input, textarea")) return;
+  if (e.key === "e" || e.key === "E") basculer();
+});
+$("b-ok").onclick = appliquer;
+$("b-fermer").onclick = basculer;
+$("b-reset").onclick = () => {
+  try { localStorage.removeItem(CLE); } catch (e) {}
+  etat = Object.assign({}, CONFIG, lireURL());
+  remplirPanneau(); rendre();
+};
+panneau.querySelectorAll("[data-plus]").forEach(btn => {
+  btn.onclick = () => {
+    etat.actuel = Math.round((etat.actuel + parseFloat(btn.dataset.plus)) * 100) / 100;
+    $("i-actuel").value = etat.actuel;
+    sauver(); rendre();
+  };
+});
+
+rendre();
+</script>
+</body>
+</html>

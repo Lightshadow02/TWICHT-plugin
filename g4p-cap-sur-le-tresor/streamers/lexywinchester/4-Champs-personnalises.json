@@ -1,0 +1,41 @@
+{
+  "paliers": {
+    "label": "Paliers (montant = texte, séparés par | )",
+    "type": "textfield",
+    "value": "5 = Allumage du micro | 25 = Allumage de la cam | 50 = Tous les 10 €, je mange une baby carotte/radis/tomate cerise… via la roue des légumes (BEURK) | 75 = Je m'engage à faire Dark Souls 3 en entier | 100 = Défi « ne pas rire » (10 € par fail reversés à l'asso) | 150 = Voix d'animal dans My Voice Zoo (tous les paliers de 50 €) | 200 = Découverte de Alien: Isolation | 300 = Make up cagole CHANTAL | 400 = Coop Hold Your King avec une personne mystère de qualitey (hors event) | 500 = Je me mets aux lives musique avec la basse (hors event) | 600 = Live garanti (hors event) 100% sans « feur », di « … », « CMB », « c'est toi le » (gages si fail) | 666 = Exposé en PowerPoint sur le stérilet | 700 = Blind test au kazoo : un t-shirt de l'event à gagner (choisi par le vainqueur) | 800 = Live karaoké (hors event) | 900 = Mèche de cheveux RGB | 1000 = La chaîne devient Dame Lexy Comtesse de Winchester | 2000 = Je me fais tatouer un bouquet de feur | 2001 = Je dis du mal de Supernatural"
+  },
+  "objectif": {
+    "label": "Objectif final en € (laisser vide = celui de Streamlabs)",
+    "type": "textfield",
+    "value": "2001"
+  },
+  "recurrents": {
+    "label": "Gages récurrents (tous les X € = nom du compteur)",
+    "type": "textfield",
+    "value": "10 = 🥕 Légumes dégueu | 50 = 🐾 Voix My Voice Zoo"
+  },
+  "echelle": {
+    "label": "Espacement des paliers",
+    "type": "dropdown",
+    "options": {
+      "reguliere": "Régulier (conseillé quand il y a beaucoup de paliers)",
+      "proportionnelle": "Proportionnel au montant"
+    },
+    "value": "reguliere"
+  },
+  "devise": {
+    "label": "Devise",
+    "type": "textfield",
+    "value": "€"
+  },
+  "texteFin": {
+    "label": "Texte quand l'objectif est atteint",
+    "type": "textfield",
+    "value": "2001 € : Lexy dit du mal de Supernatural 😱"
+  },
+  "titreParDefaut": {
+    "label": "Titre si l'objectif Streamlabs n'a pas de titre",
+    "type": "textfield",
+    "value": "Le trésor de Dame Lexy"
+  }
+}
