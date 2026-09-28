@@ -1,0 +1,15 @@
+{
+  "name": "carte-au-tresor-burri",
+  "version": "1.0.0",
+  "description": "Chasse au trésor interactive pour stream caritatif — le chat vote, les dons pèsent, le capitaine dort.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io-client": "^2.5.0",
+    "tmi.js": "^1.8.5",
+    "ws": "^8.18.0"
+  }
+}
