@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Barre de dons G4P – Team Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Germania+One&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   BARRE DE DONS — GAMERS4PETS 2026 — TEAM CHAT (Burri_TV)
+   Source navigateur OBS : largeur 1640, hauteur 280.
+   ===================================================================== */
+:root{
+  --jaune:#FFD21F;
+  --jaune-fonce:#E0A800;
+  --jaune-pale:#FFF1A8;
+  --vert:#3EE03A;
+  --vert-fonce:#1FA81C;
+  --fond:#141414;
+  --fond2:#1d1c17;
+  --texte:#FFF7DA;
+  --gris:#8d8a7a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;overflow:hidden}
+body{width:1640px;height:280px;font-family:Montserrat,system-ui,sans-serif;color:var(--texte);transform-origin:0 0}
+
+.wrap{position:absolute;left:14px;top:26px;width:1612px;height:240px}
+
+/* néon vert décoratif derrière le panneau */
+.neon-vert{position:absolute;right:-6px;top:-18px;width:520px;height:120px;border-top:3px solid var(--vert);border-right:3px solid var(--vert);border-radius:0 34px 0 0;filter:drop-shadow(0 0 6px var(--vert)) drop-shadow(0 0 14px rgba(62,224,58,.6));opacity:.9}
+.neon-vert2{position:absolute;left:300px;bottom:-12px;width:420px;height:40px;border-bottom:3px solid var(--vert);border-left:3px solid var(--vert);border-radius:0 0 0 22px;filter:drop-shadow(0 0 6px var(--vert));opacity:.75}
+
+/* panneau principal */
+.panel{position:absolute;z-index:1;left:112px;top:6px;right:6px;height:228px;border-radius:30px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(255,210,31,.10), transparent 55%),
+    linear-gradient(180deg,#201f19 0%,#141414 100%);
+  border:3px solid var(--jaune);
+  box-shadow:0 0 10px rgba(255,210,31,.8),0 0 28px rgba(255,210,31,.35),inset 0 0 26px rgba(255,210,31,.10);
+  overflow:hidden}
+.panel::after{/* grain léger */content:"";position:absolute;inset:0;opacity:.06;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.contenu{position:absolute;left:150px;right:34px;top:12px;bottom:12px}
+
+/* ligne titre */
+.titre-ligne{display:flex;align-items:flex-end;justify-content:space-between;height:66px}
+.titre{display:flex;align-items:baseline;gap:18px}
+.titre h1{margin:0;font-family:"Germania One",serif;font-weight:400;font-size:52px;line-height:1;letter-spacing:1px;color:var(--jaune);
+  text-shadow:0 0 10px rgba(255,210,31,.55),0 3px 0 #6b4f00}
+.tag{font-family:Montserrat;font-weight:800;font-size:15px;letter-spacing:2px;text-transform:uppercase;padding:6px 12px;border-radius:999px;
+  color:#171717;background:var(--vert);box-shadow:0 0 12px rgba(62,224,58,.6);transform:translateY(-8px)}
+.tag.jaune{background:var(--jaune);box-shadow:0 0 12px rgba(255,210,31,.6)}
+
+.montant{font-family:"Germania One",serif;font-size:66px;line-height:.9;color:var(--jaune);cursor:pointer;white-space:nowrap;
+  text-shadow:0 0 14px rgba(255,210,31,.7),0 3px 0 #6b4f00}
+.montant small{font-size:26px;color:var(--texte);opacity:.85;margin-left:6px;text-shadow:none;font-family:Montserrat;font-weight:700}
+
+/* barre */
+.barre-zone{position:relative;margin-top:12px;height:44px}
+.barre{position:absolute;inset:0;border-radius:999px;background:#0c0c0c;border:3px solid var(--jaune);
+  box-shadow:inset 0 3px 10px rgba(0,0,0,.8),0 0 10px rgba(255,210,31,.45);overflow:hidden}
+.remplissage{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
+  background:
+    repeating-linear-gradient(115deg,rgba(255,255,255,.18) 0 14px,transparent 14px 28px),
+    linear-gradient(180deg,#FFE766 0%,var(--jaune) 45%,var(--jaune-fonce) 100%);
+  background-size:62px 100%,100% 100%;
+  box-shadow:0 0 16px rgba(255,210,31,.9);
+  transition:width 1.4s cubic-bezier(.22,1,.36,1);
+  animation:rayures 1.6s linear infinite}
+@keyframes rayures{to{background-position:62px 0,0 0}}
+.remplissage::after{content:"";position:absolute;left:10px;right:10px;top:4px;height:8px;border-radius:999px;background:rgba(255,255,255,.35)}
+
+/* pièce au bout de la barre */
+.piece{position:absolute;top:50%;width:58px;height:58px;margin-left:-29px;margin-top:-29px;left:0;z-index:3;
+  transition:left 1.4s cubic-bezier(.22,1,.36,1);filter:drop-shadow(0 0 8px rgba(255,210,31,.9));animation:tourne 3s ease-in-out infinite}
+@keyframes tourne{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+
+/* marqueurs de paliers */
+.marqueur{position:absolute;top:-4px;bottom:-4px;width:4px;margin-left:-2px;background:rgba(255,247,218,.85);border-radius:2px;z-index:2;box-shadow:0 0 6px rgba(0,0,0,.8)}
+.marqueur.atteint{background:#3a2a00}
+.etiquettes{position:relative;height:24px;margin-top:6px;font-weight:800;font-size:17px}
+.etiquette{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;color:var(--gris)}
+.etiquette.debut{transform:none;left:0}
+.etiquette.prochain{color:var(--jaune);text-shadow:0 0 8px rgba(255,210,31,.5)}
+.etiquette.fin{transform:translateX(-100%)}
+
+/* ligne du bas */
+.bas{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:6px;height:38px}
+.prochain{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+.prochain .lbl{flex:none;font-family:Montserrat;font-weight:800;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:var(--vert);text-shadow:0 0 8px rgba(62,224,58,.5)}
+.prochain .obj{font-family:Montserrat;font-weight:700;font-size:21px;white-space:nowrap;overflow:hidden;min-width:0;flex:1;-webkit-mask-image:linear-gradient(90deg,#000 92%,transparent)}
+.prochain .obj .defil{display:inline-block}
+.prochain .obj .defil.anim{animation:defil var(--d,14s) ease-in-out infinite}
+@keyframes defil{0%,18%{transform:translateX(0)}72%,100%{transform:translateX(var(--dx))}}
+.prochain .obj b{color:var(--jaune);font-weight:800}
+.prochain .obj.cache{font-style:italic;color:var(--jaune-pale)}
+.fondu{animation:fondu .6s ease both}
+@keyframes fondu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.km{flex:none;display:flex;align-items:center;gap:10px;padding:5px 14px 5px 10px;border-radius:999px;border:2px solid var(--vert);
+  background:rgba(62,224,58,.08);box-shadow:0 0 10px rgba(62,224,58,.35);font-weight:800;font-size:18px;white-space:nowrap}
+.km b{color:var(--vert);font-size:22px}
+.km svg{width:24px;height:24px}
+
+/* badge hexagonal */
+.badge{position:absolute;left:0;top:4px;width:232px;height:232px;z-index:5;filter:drop-shadow(0 0 10px rgba(255,210,31,.75)) drop-shadow(0 6px 10px rgba(0,0,0,.6))}
+.badge .patte{transform-origin:116px 112px;animation:patte 4s ease-in-out infinite}
+@keyframes patte{0%,100%{transform:rotate(-6deg) scale(1)}50%{transform:rotate(6deg) scale(1.04)}}
+
+.deco-piece{position:absolute;width:26px;height:26px;z-index:6;filter:drop-shadow(0 0 5px rgba(255,210,31,.8))}
+
+/* célébration de palier */
+.celeb{position:absolute;inset:0;z-index:10;display:flex;align-items:center;gap:26px;padding:0 40px 0 160px;
+  background:radial-gradient(90% 160% at 20% 50%,#3a3006 0%,#1a1810 55%,#141414 100%);
+  opacity:0;pointer-events:none;transform:translateY(100%);transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .4s}
+.celeb.on{opacity:1;transform:none}
+.celeb .gauche{flex:none;text-align:center}
+.celeb .debloque{font-family:Montserrat;font-weight:800;letter-spacing:4px;font-size:18px;color:var(--vert);text-transform:uppercase;text-shadow:0 0 10px rgba(62,224,58,.7)}
+.celeb .somme{font-family:"Germania One",serif;font-size:92px;line-height:.95;color:var(--jaune);text-shadow:0 0 18px rgba(255,210,31,.8),0 4px 0 #6b4f00}
+.celeb .sep{width:3px;align-self:stretch;margin:28px 0;background:var(--jaune);box-shadow:0 0 10px var(--jaune);border-radius:2px}
+.celeb .texte{font-family:"Germania One",serif;font-size:44px;line-height:1.08;color:var(--texte);text-shadow:0 2px 0 #000}
+.celeb .texte.cache{color:var(--jaune-pale)}
+.celeb.on .somme{animation:boum .7s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes boum{from{transform:scale(.3)}to{transform:scale(1)}}
+
+.pluie{position:absolute;left:0;top:0;width:1640px;height:280px;pointer-events:none;z-index:20;overflow:hidden}
+.pluie .p{position:absolute;width:30px;height:30px;will-change:transform}
+
+/* saisie manuelle (OBS > Interagir, clic sur le montant) */
+.saisie{position:absolute;right:40px;top:12px;z-index:30;display:none;gap:8px;align-items:center;background:#111;border:2px solid var(--jaune);border-radius:14px;padding:8px}
+.saisie.on{display:flex}
+.saisie input{width:180px;font:700 24px Montserrat;background:#000;color:var(--jaune);border:1px solid #444;border-radius:8px;padding:6px 10px}
+.saisie button{font:800 16px Montserrat;background:var(--jaune);color:#111;border:0;border-radius:8px;padding:10px 14px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <radialGradient id="gPiece" cx="38%" cy="32%" r="75%">
+      <stop offset="0" stop-color="#FFF6B0"/><stop offset=".45" stop-color="#FFD21F"/><stop offset="1" stop-color="#B98200"/>
+    </radialGradient>
+    <symbol id="piece" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="30" fill="#8a6100"/>
+      <circle cx="32" cy="30" r="29" fill="url(#gPiece)"/>
+      <circle cx="32" cy="30" r="22" fill="none" stroke="#a87700" stroke-width="2.5" stroke-dasharray="3 3"/>
+      <g fill="#8a6100">
+        <ellipse cx="32" cy="37" rx="9.5" ry="7.5"/>
+        <ellipse cx="21.5" cy="27" rx="4" ry="5"/>
+        <ellipse cx="28" cy="21" rx="4" ry="5.2"/>
+        <ellipse cx="36" cy="21" rx="4" ry="5.2"/>
+        <ellipse cx="42.5" cy="27" rx="4" ry="5"/>
+      </g>
+    </symbol>
+    <symbol id="bottes" viewBox="0 0 24 24">
+      <path d="M6 3h5v9l2 2h5a3 3 0 0 1 3 3v2H4v-3l2-2z" fill="#3EE03A"/>
+      <rect x="3" y="19" width="19" height="2.5" rx="1" fill="#1FA81C"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <div class="neon-vert"></div>
+  <div class="neon-vert2"></div>
+
+  <div class="panel">
+    <div class="contenu">
+      <div class="titre-ligne">
+        <div class="titre">
+          <h1>Donation Goals</h1>
+          <span class="tag jaune">Team Chat</span>
+          <span class="tag">G4P 2026</span>
+        </div>
+        <div class="montant" id="montant" title="Clic pour modifier le montant">0 €</div>
+      </div>
+
+      <div class="barre-zone">
+        <div class="barre"><div class="remplissage" id="remplissage"></div><div id="marqueurs"></div></div>
+        <svg class="piece" id="curseur"><use href="#piece"/></svg>
+      </div>
+      <div class="etiquettes" id="etiquettes"></div>
+
+      <div class="bas">
+        <div class="prochain"><span class="lbl" id="lbl">Prochain palier</span><span class="obj" id="obj"></span></div>
+        <div class="km"><svg><use href="#bottes"/></svg><span><b id="km">0</b> km à marcher</span></div>
+      </div>
+    </div>
+
+    <div class="celeb" id="celeb">
+      <div class="gauche"><div class="debloque">Palier débloqué</div><div class="somme" id="celebSomme">0 €</div></div>
+      <div class="sep"></div>
+      <div class="texte" id="celebTexte"></div>
+    </div>
+
+    <div class="saisie" id="saisie">
+      <input id="saisieInput" type="text" inputmode="decimal" placeholder="Montant €">
+      <button id="saisieOk">OK</button>
+    </div>
+  </div>
+
+  <!-- badge hexagonal Team Chat -->
+  <svg class="badge" viewBox="0 0 232 232">
+    <defs>
+      <linearGradient id="gHex" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#FFE45C"/><stop offset=".55" stop-color="#FFD21F"/><stop offset="1" stop-color="#D99E00"/>
+      </linearGradient>
+      <linearGradient id="gVague" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#FFF08A" stop-opacity=".7"/><stop offset="1" stop-color="#FFF08A" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <!-- contour jaune néon -->
+    <polygon points="116,10 206,58 206,168 116,218 26,168 26,58" fill="none" stroke="#FFD21F" stroke-width="10" stroke-linejoin="round"/>
+    <!-- anneau sombre -->
+    <polygon points="116,22 196,64 196,162 116,206 36,162 36,64" fill="#1b1b18" stroke="#1b1b18" stroke-width="18" stroke-linejoin="round"/>
+    <!-- cœur jaune -->
+    <polygon points="116,44 176,76 176,152 116,186 56,152 56,76" fill="url(#gHex)" stroke="url(#gHex)" stroke-width="22" stroke-linejoin="round"/>
+    <path d="M44 120 C 90 96, 140 150, 190 112 L 190 124 C 140 164, 90 110, 44 134 Z" fill="url(#gVague)" opacity=".55"/>
+    <path d="M44 150 C 90 128, 140 176, 190 146 L 190 154 C 140 186, 90 140, 44 160 Z" fill="#fff4a0" opacity=".25"/>
+    <!-- patte -->
+    <g class="patte" fill="#FFF7DA" stroke="#171717" stroke-width="5" stroke-linejoin="round">
+      <path d="M116 104 c 20 0 36 16 36 33 c 0 14 -10 20 -20 20 c -8 0 -10 -4 -16 -4 s -8 4 -16 4 c -10 0 -20 -6 -20 -20 c 0 -17 16 -33 36 -33 z"/>
+      <ellipse cx="80" cy="96" rx="11" ry="14" transform="rotate(-20 80 96)"/>
+      <ellipse cx="102" cy="76" rx="11" ry="15" transform="rotate(-6 102 76)"/>
+      <ellipse cx="130" cy="76" rx="11" ry="15" transform="rotate(6 130 76)"/>
+      <ellipse cx="152" cy="96" rx="11" ry="14" transform="rotate(20 152 96)"/>
+    </g>
+  </svg>
+
+  <svg class="deco-piece" style="left:196px;top:-10px"><use href="#piece"/></svg>
+  <svg class="deco-piece" style="left:8px;top:196px;width:20px;height:20px"><use href="#piece"/></svg>
+</div>
+
+<div class="pluie" id="pluie"></div>
+
+<script>
+/* =====================================================================
+   CONFIGURATION — à modifier ici
+   ===================================================================== */
+const CONFIG = {
+  montantDepart: 0,          // montant si rien d'autre n'est fourni
+  fichierMontant: "montant.txt", // fichier à côté du .html, relu toutes les X secondes (optionnel)
+  intervalleLecture: 5000,   // ms
+  kmTousLes: 10,             // 1 km tous les 10 €
+  dureeCelebration: 8000,    // ms d'affichage d'un palier débloqué
+  paliersVisibles: 2,        // nb de paliers à venir affichés sur la barre
+  paliers: [
+    { m: 1,     t: "Je balance un fait random sur les animaux à chaque palier" },
+    { m: 11.19, t: "Je joue à STRAY" },
+    { m: 20,    t: "J'adopte un chat / 20 € (sur Minecraft)" },
+    { m: 35,    t: "Je fais une cover d'une chanson de Goldman" },
+    { m: 50,    cache: true, revele: "" },
+    { m: 75,    t: "Tier list des chauves" },
+    { m: 100,   t: "Je refais gratuitement les photos de profil des animaux d'une SPA" },
+    { m: 150,   t: "Je fais une vidéo narration (style EGO etc.)" },
+    { m: 250,   t: "Vidéo longue sur les animaux (avec sensibilisation)" },
+    { m: 300,   t: "J'offre 1 mug Burri (exclu) aux 2 meilleurs donateurs*" },
+    { m: 400,   t: "Je reproduis ma DA en direct sous Paint en 20 min chrono (je la garde 1 semaine / 200 €)" },
+    { m: 500,   t: "Je rase à blanc les cheveux de mon frère (en live)" },
+    { m: 600,   t: "React docu animalier" },
+    { m: 750,   cache: true, revele: "" },
+    { m: 1000,  t: "Je reposte mes anciennes vidéos YTB" },
+    { m: 1150,  t: "Je fais un stream une nuit seul en forêt" },
+    { m: 1300,  t: "Je me fais une teinture de cheveux jaune" },
+    { m: 1500,  cache: true, revele: "" },
+    { m: 1700,  t: "Je deviens bénévole pour la SPA pendant mes prochaines vacances" },
+    { m: 1800,  cache: true, revele: "" },
+    { m: 2000,  t: "Je fais Strasbourg – Lure en live à pied" },
+    { m: 2500,  t: "Je m'engage à faire les donation goals non respectés des événements précédents" },
+    { m: 5000,  t: "Je rase la barbe de mon frère" }
+  ]
+};
+/* ===================================================================== */
+
+const $ = id => document.getElementById(id);
+const P = CONFIG.paliers.slice().sort((a,b)=>a.m-b.m);
+const params = new URLSearchParams(location.search);
+
+const scale = parseFloat(params.get("scale"));
+if (scale > 0) document.body.style.transform = `scale(${scale})`;
+
+const fmt = n => n.toLocaleString("fr-FR", {minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2}).replace(/[\u202f\u00a0]/g, "\u00a0") + "\u00a0€";
+const txtPalier = (p, atteint) => p.cache ? (atteint ? (p.revele || "Palier caché débloqué !") : "Palier caché… surprise !") : p.t;
+
+let montant = null, affiche = 0, anim = null;
+
+function tweenMontant(cible){
+  cancelAnimationFrame(anim);
+  const debut = affiche, t0 = performance.now(), d = 1400;
+  const pas = now => {
+    const k = Math.min(1, (now - t0) / d), e = 1 - Math.pow(1 - k, 3);
+    affiche = debut + (cible - debut) * e;
+    $("montant").textContent = fmt(Math.round(affiche * 100) / 100);
+    if (k < 1) anim = requestAnimationFrame(pas); else { affiche = cible; $("montant").textContent = fmt(cible); }
+  };
+  anim = requestAnimationFrame(pas);
+}
+
+function rendu(){
+  const atteints = P.filter(p => montant >= p.m);
+  const avenir = P.filter(p => montant < p.m);
+  const debut = atteints.length ? atteints[atteints.length - 1].m : 0;
+  const fenetre = avenir.slice(0, CONFIG.paliersVisibles);
+  const fin = fenetre.length ? fenetre[fenetre.length - 1].m : P[P.length - 1].m;
+  const pct = fenetre.length ? Math.max(0, Math.min(1, (montant - debut) / (fin - debut))) : 1;
+
+  $("remplissage").style.width = (pct * 100) + "%";
+  $("curseur").style.left = `calc(${pct * 100}% )`;
+
+  const mq = $("marqueurs"), et = $("etiquettes");
+  mq.innerHTML = ""; et.innerHTML = "";
+  const lab = (txt, cls, left) => { const s = document.createElement("span"); s.className = "etiquette " + cls; s.textContent = txt; if (left != null) s.style.left = left; et.appendChild(s); };
+  lab(fmt(debut), "debut");
+  fenetre.forEach((p, i) => {
+    const x = (p.m - debut) / (fin - debut) * 100;
+    if (i < fenetre.length - 1) { const d = document.createElement("div"); d.className = "marqueur"; d.style.left = x + "%"; mq.appendChild(d); }
+    lab(fmt(p.m), (i === 0 ? "prochain " : "") + (i === fenetre.length - 1 ? "fin" : ""), i === fenetre.length - 1 ? "100%" : x + "%");
+  });
+
+  const obj = $("obj"), lbl = $("lbl");
+  let html, cache = false;
+  if (fenetre.length) {
+    const p = fenetre[0];
+    lbl.textContent = "Prochain palier";
+    html = `<b>${fmt(p.m)}</b> · ${esc(txtPalier(p, false))}`;
+    cache = !!p.cache;
+  } else {
+    lbl.textContent = "Incroyable";
+    html = `<b>Tous les paliers sont débloqués !</b> Merci l'équipage !`;
+  }
+  if (obj.dataset.h !== html) {
+    obj.innerHTML = `<span class="defil">${html}</span>`; obj.dataset.h = html;
+    requestAnimationFrame(() => { const sp = obj.firstChild, dx = sp.scrollWidth - obj.clientWidth + 30;
+      sp.classList.toggle("anim", dx > 30); sp.style.setProperty("--dx", -dx + "px"); sp.style.setProperty("--d", Math.max(10, dx / 25) + "s"); });
+    obj.classList.toggle("cache", cache);
+    obj.classList.remove("fondu"); void obj.offsetWidth; obj.classList.add("fondu");
+  }
+  $("km").textContent = Math.floor(montant / CONFIG.kmTousLes);
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* --- célébrations --- */
+const file = []; let enCours = false;
+function celebrer(p){ file.push(p); if (!enCours) suivante(); }
+function suivante(){
+  const p = file.shift();
+  if (!p) { enCours = false; return; }
+  enCours = true;
+  $("celebSomme").textContent = fmt(p.m);
+  const t = $("celebTexte"); t.textContent = txtPalier(p, true); t.classList.toggle("cache", !!p.cache);
+  t.style.fontSize = t.textContent.length > 70 ? "34px" : t.textContent.length > 45 ? "40px" : "46px";
+  const c = $("celeb"); c.classList.remove("on"); void c.offsetWidth; c.classList.add("on");
+  pluie();
+  setTimeout(() => { c.classList.remove("on"); setTimeout(suivante, 700); }, CONFIG.dureeCelebration);
+}
+function pluie(){
+  const z = $("pluie");
+  for (let i = 0; i < 34; i++) {
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    s.setAttribute("class", "p");
+    s.innerHTML = '<use href="#piece"/>';
+    const x0 = 180 + Math.random() * 1400, sz = 18 + Math.random() * 20;
+    s.style.width = s.style.height = sz + "px";
+    s.style.left = x0 + "px"; s.style.top = "-40px";
+    z.appendChild(s);
+    const dx = (Math.random() - .5) * 160, rot = (Math.random() - .5) * 900;
+    s.animate([
+      { transform: "translate(0,0) rotate(0)", opacity: 1 },
+      { transform: `translate(${dx}px, 340px) rotate(${rot}deg)`, opacity: .9 }
+    ], { duration: 1600 + Math.random() * 1400, delay: Math.random() * 900, easing: "cubic-bezier(.4,.1,.7,1)", fill: "both" })
+     .onfinish = () => s.remove();
+  }
+}
+
+/* --- mise à jour du montant --- */
+function setMontant(v, source){
+  v = Math.round(parseFloat(String(v).replace(",", ".").replace(/[^\d.\-]/g, "")) * 100) / 100;
+  if (!isFinite(v) || v < 0) return;
+  if (montant !== null && v > montant) {
+    let franchis = P.filter(p => p.m > montant && p.m <= v);
+    if (franchis.length > 3) franchis = franchis.slice(-3);
+    franchis.forEach(celebrer);
+  }
+  if (v === montant) return;
+  montant = v;
+  try { localStorage.setItem("g4p-montant", v); } catch(e) {}
+  tweenMontant(v);
+  rendu();
+}
+
+// 1) paramètre d'URL ?montant=123  2) dernière valeur enregistrée  3) valeur de départ
+let init = params.get("montant");
+if (init == null) { try { init = localStorage.getItem("g4p-montant"); } catch(e) {} }
+setMontant(init ?? CONFIG.montantDepart);
+
+// lecture du fichier montant.txt (OBS en "Fichier local")
+let dernierFichier = null;
+async function lireFichier(){
+  try {
+    const r = await fetch(CONFIG.fichierMontant + "?t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) return;
+    const t = (await r.text()).trim();
+    if (t && t !== dernierFichier) { dernierFichier = t; setMontant(t, "fichier"); }
+  } catch(e) {}
+}
+if (CONFIG.fichierMontant && location.protocol !== "file:" && !params.has("demo")) { lireFichier(); setInterval(lireFichier, CONFIG.intervalleLecture); }
+
+// saisie manuelle : OBS > clic droit sur la source > Interagir > clic sur le montant
+$("montant").addEventListener("click", () => {
+  $("saisie").classList.add("on");
+  $("saisieInput").value = montant; $("saisieInput").focus(); $("saisieInput").select();
+});
+const valider = () => { setMontant($("saisieInput").value, "manuel"); $("saisie").classList.remove("on"); };
+$("saisieOk").addEventListener("click", valider);
+$("saisieInput").addEventListener("keydown", e => { if (e.key === "Enter") valider(); if (e.key === "Escape") $("saisie").classList.remove("on"); });
+
+// mode démo : ?demo=1
+if (params.has("demo")) {
+  montant = null; affiche = 0; setMontant(0);
+  setInterval(() => setMontant(montant + Math.round((5 + Math.random() * 55) * 100) / 100), 4000);
+}
+
+// test d'un palier : ?test=400
+if (params.has("test")) { const p = P.find(x => x.m == params.get("test")); if (p) setTimeout(() => celebrer(p), 600); }
+</script>
+</body>
+</html>
