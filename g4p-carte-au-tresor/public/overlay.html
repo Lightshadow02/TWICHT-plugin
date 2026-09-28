@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Carte au trésor — overlay</title>
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --jaune: #F5C518;
+    --jaune-fonce: #C9980A;
+    --encre: #3b2412;
+    --parchemin: #e8d5a8;
+    --parchemin-fonce: #c9b07a;
+    --mer: #0b1d2e;
+    --mer2: #123650;
+    --rouge: #b3261e;
+    --vert: #2e8b57;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; font-family: 'Nunito', sans-serif; color: var(--encre); }
+  body { background: radial-gradient(ellipse at 30% 40%, var(--mer2), var(--mer) 70%); }
+  body.transparent { background: transparent; }
+
+  /* vagues de fond */
+  .vagues { position: absolute; inset: 0; opacity: .25; overflow: hidden; pointer-events: none; }
+  .vagues svg { position: absolute; width: 4000px; height: 1080px; left: 0; animation: derive 40s linear infinite; }
+  @keyframes derive { to { transform: translateX(-2000px); } }
+
+  /* ----- carte ----- */
+  .carte {
+    position: absolute; left: 40px; top: 40px; width: 1240px; height: 1000px;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(255,255,255,.25), transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(120,80,20,.25), transparent 50%),
+      var(--parchemin);
+    border-radius: 14px;
+    box-shadow: inset 0 0 80px rgba(90,50,10,.45), 0 20px 60px rgba(0,0,0,.6);
+    padding: 26px 30px;
+    display: flex; flex-direction: column;
+  }
+  .carte::before { /* bords brûlés */
+    content: ''; position: absolute; inset: 0; border-radius: 14px; pointer-events: none;
+    box-shadow: inset 0 0 0 6px rgba(70,35,5,.35), inset 0 0 40px 12px rgba(70,35,5,.35);
+  }
+  .carte h1 { font-family: 'Pirata One', cursive; font-size: 54px; letter-spacing: 1px; line-height: 1; text-shadow: 2px 2px 0 rgba(255,255,255,.35); }
+  .carte h1 span { color: var(--jaune-fonce); }
+  .carte .sous { font-size: 20px; font-weight: 800; opacity: .8; margin-top: 4px; display: flex; align-items: center; gap: 14px; }
+  .carteNum { font-family: 'Pirata One'; font-size: 22px; background: var(--encre); color: var(--jaune); padding: 2px 14px; border-radius: 20px; opacity: 1; }
+
+  .grille-wrap { flex: 1; margin-top: 16px; display: grid; grid-template-columns: 34px 1fr; grid-template-rows: 30px 1fr; gap: 4px; }
+  .lettres { grid-column: 2; display: grid; }
+  .lettres div, .chiffres div { display: flex; align-items: center; justify-content: center; font-family: 'Pirata One'; font-size: 24px; opacity: .7; }
+  .chiffres { grid-row: 2; display: grid; }
+  .grille { grid-column: 2; grid-row: 2; display: grid; gap: 5px; }
+
+  .case {
+    position: relative; border-radius: 8px;
+    background: rgba(255,255,255,.18);
+    border: 2px dashed rgba(59,36,18,.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px; transition: transform .3s, background .3s;
+  }
+  .case .id { position: absolute; left: 6px; top: 3px; font-size: 13px; font-weight: 800; opacity: .45; }
+  .case.candidat { border: 3px solid var(--jaune); background: rgba(245,197,24,.28); animation: pulse 1.6s ease-in-out infinite; box-shadow: 0 0 18px rgba(245,197,24,.55); }
+  @keyframes pulse { 50% { box-shadow: 0 0 6px rgba(245,197,24,.2); } }
+  .case .votes {
+    position: absolute; right: -8px; top: -10px; min-width: 32px; height: 32px; padding: 0 8px;
+    background: var(--jaune); color: var(--encre); border-radius: 16px; border: 3px solid var(--encre);
+    font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+    transition: transform .2s;
+  }
+  .case .votes.bump { transform: scale(1.35); }
+  .case.revealed { border: 2px solid rgba(59,36,18,.5); background: rgba(59,36,18,.12); }
+  .case.revealed.sable { background: rgba(59,36,18,.06); }
+  .case.revealed.sable .ico { opacity: .35; font-size: 22px; }
+  .case.revealed.doublons { background: rgba(245,197,24,.25); }
+  .case.revealed.gage { background: rgba(179,38,30,.22); }
+  .case.revealed.indice { background: rgba(46,139,87,.25); }
+  .case.revealed.secret { background: rgba(110,60,180,.25); }
+  .case.revealed.piege { background: rgba(0,0,0,.35); }
+  .case.revealed.capitaine { background: rgba(30,90,160,.28); }
+  .case.revealed.scelle { background: repeating-linear-gradient(45deg, rgba(20,60,110,.35) 0 6px, rgba(20,60,110,.15) 6px 12px); }
+  .case.revealed.scelle .ico { opacity: .6; font-size: 24px; }
+  .reveal.capitaine .card { background: #cfe0f0; }
+  .reveal.duo .card { background: #f3d9b1; box-shadow: inset 0 0 0 6px var(--jaune), inset 0 0 60px rgba(90,50,10,.4), 0 30px 80px #000; }
+  .dettes li.duo .c { color: #b8600a; }
+  .dettes li .duo-tag { display: inline-block; background: var(--encre); color: var(--jaune); font-size: 11px; padding: 1px 6px; border-radius: 6px; margin-right: 4px; vertical-align: 1px; }
+  .brouillard .cand .barre i { background: repeating-linear-gradient(90deg, #888 0 8px, #aaa 8px 16px); }
+  .case.revealed.tresor { background: gold; animation: brille 1.2s ease-in-out infinite; }
+  @keyframes brille { 50% { box-shadow: 0 0 40px 10px rgba(255,215,0,.7); } }
+  .case.flip { animation: flip .7s ease; }
+  @keyframes flip { 0% { transform: rotateY(0); } 50% { transform: rotateY(90deg) scale(1.2); } 100% { transform: rotateY(0); } }
+  .case .sub { position: absolute; bottom: 3px; left: 0; right: 0; text-align: center; font-size: 12px; font-weight: 800; }
+
+  /* ----- panneau droit ----- */
+  .panneau { position: absolute; left: 1310px; top: 40px; width: 570px; height: 1000px; display: flex; flex-direction: column; gap: 16px; }
+  .bloc {
+    background: rgba(232,213,168,.96); border-radius: 12px; padding: 16px 20px;
+    box-shadow: inset 0 0 30px rgba(90,50,10,.25), 0 10px 30px rgba(0,0,0,.5);
+  }
+  .bloc h2 { font-family: 'Pirata One'; font-size: 30px; letter-spacing: .5px; display: flex; align-items: center; gap: 10px; }
+  .bloc h2 .tag { margin-left: auto; font-family: 'Nunito'; font-size: 14px; background: var(--encre); color: var(--jaune); border-radius: 20px; padding: 3px 12px; }
+
+  /* manche */
+  .manche { display: flex; gap: 18px; align-items: center; }
+  .timer { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+  .timer svg { transform: rotate(-90deg); }
+  .timer circle { fill: none; stroke-width: 10; }
+  .timer .fond { stroke: rgba(59,36,18,.2); }
+  .timer .prog { stroke: var(--jaune-fonce); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+  .timer .txt { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; }
+  .timer .txt b { font-size: 34px; line-height: 1; }
+  .timer .txt small { font-size: 12px; opacity: .7; }
+  .candidats { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .cand { display: grid; grid-template-columns: 52px 1fr 40px; align-items: center; gap: 8px; font-weight: 800; }
+  .cand .nom { font-family: 'Pirata One'; font-size: 26px; }
+  .cand .barre { height: 18px; background: rgba(59,36,18,.15); border-radius: 9px; overflow: hidden; }
+  .cand .barre i { display: block; height: 100%; background: linear-gradient(90deg, var(--jaune-fonce), var(--jaune)); border-radius: 9px; transition: width .4s; }
+  .cand .n { text-align: right; }
+  .cand.leader .nom { color: var(--jaune-fonce); }
+  .comment { font-size: 15px; font-weight: 800; opacity: .8; margin-top: 10px; text-align: center; }
+  .comment code { background: var(--encre); color: var(--jaune); padding: 2px 8px; border-radius: 6px; font-family: 'Nunito'; }
+
+  /* totaux */
+  .totaux { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .tot { text-align: center; background: rgba(59,36,18,.08); border-radius: 10px; padding: 10px 4px; }
+  .tot b { display: block; font-size: 34px; line-height: 1.1; font-family: 'Pirata One'; color: var(--encre); }
+  .tot span { font-size: 13px; font-weight: 800; opacity: .75; }
+  .tot.dons b { color: var(--jaune-fonce); }
+
+  /* dettes */
+  .dettes { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .dettes ul { list-style: none; overflow: hidden; flex: 1; margin-top: 8px; }
+  .dettes li { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-bottom: 1px dashed rgba(59,36,18,.25); font-size: 15px; font-weight: 600; line-height: 1.25; }
+  .dettes li .c { font-family: 'Pirata One'; font-size: 20px; color: var(--rouge); min-width: 36px; }
+  .dettes li.ultime .c { color: var(--jaune-fonce); }
+  .dettes li.done { opacity: .4; text-decoration: line-through; }
+  .dettes .vide { opacity: .6; font-style: italic; padding: 10px 0; }
+
+  /* top pirates + dons */
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; min-height: 240px; }
+  .duo h2 { font-size: 24px; }
+  .top { list-style: none; margin-top: 6px; }
+  .top li { display: grid; grid-template-columns: 26px 1fr auto; gap: 6px; align-items: center; font-size: 15px; font-weight: 700; padding: 3px 0; }
+  .top li .r { font-family: 'Pirata One'; font-size: 20px; color: var(--jaune-fonce); }
+  .top li:first-child .r { font-size: 24px; }
+  .top li .nom { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top li .d { font-size: 13px; opacity: .8; }
+  .top li .d b { color: var(--jaune-fonce); font-size: 15px; }
+  .recomp { margin-top: 8px; font-size: 13px; font-weight: 800; background: var(--encre); color: var(--jaune); padding: 4px 10px; border-radius: 8px; text-align: center; }
+  .top li.vide { display: block; opacity: .6; font-style: italic; font-weight: 600; font-size: 14px; }
+  /* derniers dons */
+  .dons li { list-style: none; display: flex; gap: 8px; font-size: 15px; padding: 3px 0; font-weight: 600; }
+  .dons li b { color: var(--jaune-fonce); min-width: 62px; }
+  .dons li span { opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ticker */
+  .ticker { position: absolute; left: 40px; bottom: 12px; width: 1240px; height: 26px; overflow: hidden; color: var(--jaune); font-weight: 800; font-size: 17px; text-shadow: 0 2px 4px #000; }
+  .ticker div { white-space: nowrap; animation: defile 28s linear infinite; }
+  @keyframes defile { from { transform: translateX(1240px); } to { transform: translateX(-100%); } }
+
+  /* ----- révélation plein écran ----- */
+  .reveal { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.55); opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 10; }
+  .reveal.on { opacity: 1; }
+  .reveal .card {
+    width: 760px; padding: 40px 50px; text-align: center; border-radius: 18px;
+    background: var(--parchemin); box-shadow: inset 0 0 60px rgba(90,50,10,.4), 0 30px 80px #000;
+    transform: scale(.6) rotate(-4deg); transition: transform .45s cubic-bezier(.2,1.6,.4,1);
+  }
+  .reveal.on .card { transform: scale(1) rotate(0); }
+  .reveal .ico { font-size: 110px; line-height: 1; }
+  .reveal .cell { font-family: 'Pirata One'; font-size: 70px; color: var(--jaune-fonce); line-height: 1; }
+  .reveal .type { font-family: 'Pirata One'; font-size: 40px; margin-top: 4px; }
+  .reveal .lbl { font-size: 26px; font-weight: 800; margin-top: 14px; line-height: 1.3; }
+  .reveal .by { font-size: 16px; opacity: .7; margin-top: 16px; }
+  .reveal.tresor .card { background: gold; animation: brille 1s infinite; }
+
+  /* toast don */
+  .toast { position: absolute; left: 50%; top: 24px; transform: translate(-50%, -140px); background: var(--jaune); color: var(--encre); padding: 14px 28px; border-radius: 40px; font-weight: 800; font-size: 24px; box-shadow: 0 10px 30px #000; transition: transform .5s cubic-bezier(.2,1.4,.4,1); z-index: 11; white-space: nowrap; }
+  .toast.on { transform: translate(-50%, 0); }
+  .toast small { display: block; font-size: 15px; text-align: center; opacity: .8; }
+
+  .pause { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.6); z-index: 9; font-family: 'Pirata One'; font-size: 90px; color: var(--jaune); }
+  .pause.on { display: flex; }
+</style>
+</head>
+<body>
+<div class="vagues"><svg viewBox="0 0 4000 1080" preserveAspectRatio="none">
+  <path fill="none" stroke="#7fb3d5" stroke-width="3" d="M0 300 Q100 260 200 300 T400 300 T600 300 T800 300 T1000 300 T1200 300 T1400 300 T1600 300 T1800 300 T2000 300 T2200 300 T2400 300 T2600 300 T2800 300 T3000 300 T3200 300 T3400 300 T3600 300 T3800 300 T4000 300"/>
+  <path fill="none" stroke="#7fb3d5" stroke-width="3" d="M0 700 Q100 660 200 700 T400 700 T600 700 T800 700 T1000 700 T1200 700 T1400 700 T1600 700 T1800 700 T2000 700 T2200 700 T2400 700 T2600 700 T2800 700 T3000 700 T3200 700 T3400 700 T3600 700 T3800 700 T4000 700"/>
+  <path fill="none" stroke="#7fb3d5" stroke-width="2" d="M0 950 Q100 920 200 950 T400 950 T600 950 T800 950 T1000 950 T1200 950 T1400 950 T1600 950 T1800 950 T2000 950 T2200 950 T2400 950 T2600 950 T2800 950 T3000 950 T3200 950 T3400 950 T3600 950 T3800 950 T4000 950"/>
+</svg></div>
+
+<div class="carte">
+  <h1 id="titre">La carte au trésor du <span>Capitaine Burri</span></h1>
+  <div class="sous"><span id="sousTitre">Le capitaine dort… le chat creuse !</span> <span class="carteNum" id="carteNum">Carte n°1</span></div>
+  <div class="grille-wrap">
+    <div></div>
+    <div class="lettres" id="lettres"></div>
+    <div class="chiffres" id="chiffres"></div>
+    <div class="grille" id="grille"></div>
+  </div>
+</div>
+
+<div class="panneau">
+  <div class="bloc">
+    <h2>⚓ Où creuser ? <span class="tag" id="mancheNum">Manche 1</span></h2>
+    <div class="manche">
+      <div class="timer">
+        <svg width="120" height="120"><circle class="fond" cx="60" cy="60" r="52"/><circle class="prog" id="prog" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="0"/></svg>
+        <div class="txt"><b id="tsec">--</b><small>secondes</small></div>
+      </div>
+      <div class="candidats" id="candidats"></div>
+    </div>
+    <div class="comment" id="comment">Tape <code>!creuse B7</code> pour voter · un don avec une case la creuse direct</div>
+  </div>
+
+  <div class="bloc">
+    <div class="totaux">
+      <div class="tot dons"><b id="totDons">0 €</b><span>récoltés</span></div>
+      <div class="tot"><b id="totKm">0 km</b><span>à marcher</span></div>
+      <div class="tot"><b id="totDoublons">0</b><span>doublons</span></div>
+    </div>
+  </div>
+
+  <div class="bloc dettes">
+    <h2>📜 Dettes du Capitaine <span class="tag" id="nbDettes">0</span></h2>
+    <ul id="dettes"></ul>
+  </div>
+
+  <div class="bloc duo">
+    <div>
+      <h2>🏴‍☠️ Top pirates</h2>
+      <ol class="top" id="top"></ol>
+      <div class="recomp" id="recomp"></div>
+    </div>
+    <div>
+      <h2>💛 Derniers dons</h2>
+      <ul class="dons" id="dons"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="ticker"><div id="ticker"></div></div>
+
+<div class="reveal" id="reveal"><div class="card">
+  <div class="ico" id="rIco"></div>
+  <div class="cell" id="rCell"></div>
+  <div class="type" id="rType"></div>
+  <div class="lbl" id="rLbl"></div>
+  <div class="by" id="rBy"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+<div class="pause" id="pause">⏸ Pause du capitaine</div>
+
+<script>
+const ICO = { ncarte: '🗺️', sable: '⛏️', doublons: '🪙', gage: '🎯', indice: '🧭', secret: '🔮', piege: '💀', tresor: '💎', capitaine: '🏴‍☠️', scelle: '⛓️' };
+const TYPE = { ncarte: 'NOUVELLE CARTE', capitaine: 'Le Capitaine contre-attaque !', scelle: 'Case engloutie', sable: 'Rien que du sable', doublons: 'Doublons !', gage: 'GAGE !', indice: 'Indice', secret: 'Secret', piege: 'Piège !', tresor: 'LE TRÉSOR !!!' };
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+if (new URLSearchParams(location.search).get('transparent') === '1') document.body.classList.add('transparent');
+
+let S = null, C = null, gridBuilt = '';
+const $ = id => document.getElementById(id);
+
+function buildGrid() {
+  const key = C.grille.cols + 'x' + C.grille.rows;
+  if (gridBuilt === key) return;
+  gridBuilt = key;
+  const g = $('grille'); g.innerHTML = '';
+  g.style.gridTemplateColumns = `repeat(${C.grille.cols}, 1fr)`;
+  g.style.gridTemplateRows = `repeat(${C.grille.rows}, 1fr)`;
+  $('lettres').innerHTML = ''; $('lettres').style.gridTemplateColumns = `repeat(${C.grille.cols}, 1fr)`;
+  $('chiffres').innerHTML = ''; $('chiffres').style.gridTemplateRows = `repeat(${C.grille.rows}, 1fr)`;
+  for (let c = 0; c < C.grille.cols; c++) $('lettres').insertAdjacentHTML('beforeend', `<div>${LETTERS[c]}</div>`);
+  for (let r = 0; r < C.grille.rows; r++) $('chiffres').insertAdjacentHTML('beforeend', `<div>${r + 1}</div>`);
+  for (let r = 0; r < C.grille.rows; r++) for (let c = 0; c < C.grille.cols; c++) {
+    const id = LETTERS[c] + (r + 1);
+    g.insertAdjacentHTML('beforeend', `<div class="case" id="c-${id}"><span class="id">${id}</span><span class="ico"></span><span class="sub"></span><span class="votes" style="display:none"></span></div>`);
+  }
+}
+
+function render() {
+  if (!S || !C) return;
+  buildGrid();
+  $('titre').innerHTML = (C.affichage?.titre || 'La carte au trésor').replace(/(Capitaine [^ ]+)/, '<span>$1</span>');
+  $('sousTitre').textContent = C.affichage?.sousTitre || '';
+  $('carteNum').textContent = `Carte n°${S.carte?.numero || 1}`;
+  document.documentElement.style.setProperty('--jaune', C.affichage?.couleur || '#F5C518');
+
+  const counts = S.round?.counts || {};
+  const cands = S.round?.candidates || [];
+  document.querySelectorAll('.case').forEach(el => {
+    const id = el.id.slice(2);
+    const rec = S.revealed[id];
+    el.className = 'case';
+    const ico = el.querySelector('.ico'), sub = el.querySelector('.sub'), v = el.querySelector('.votes');
+    if (rec) {
+      el.classList.add('revealed', rec.type);
+      ico.textContent = ICO[rec.type] || '?';
+      sub.textContent = rec.type === 'doublons' ? rec.value : '';
+      v.style.display = 'none';
+    } else {
+      ico.textContent = ''; sub.textContent = '';
+      if (cands.includes(id) && !S.pause) {
+        el.classList.add('candidat');
+        v.style.display = ''; v.textContent = counts[id] || 0;
+      } else v.style.display = 'none';
+    }
+  });
+
+  // manche
+  $('mancheNum').textContent = S.round ? `Manche ${S.round.number}` : (S.pause ? 'Pause' : 'Bientôt…');
+  const cl = $('candidats'); cl.innerHTML = '';
+  if (S.round) {
+    const list = C.round.voteLibre
+      ? Object.entries(counts).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).slice(0, 4)
+      : cands.map(c => [c, counts[c] || 0]);
+    const fog = !!S.round.countsCaches;
+    cl.classList.toggle('brouillard', fog);
+    const nums = list.map(([, n]) => fog ? 0 : n);
+    const max = Math.max(1, ...nums), top = Math.max(...nums);
+    for (const [c, n] of list) cl.insertAdjacentHTML('beforeend',
+      `<div class="cand ${!fog && n === top && n > 0 ? 'leader' : ''}"><span class="nom">${c}</span><div class="barre"><i style="width:${fog ? 100 : n / max * 100}%"></i></div><span class="n">${fog ? '?' : n}</span></div>`);
+    if (!list.length) cl.innerHTML = '<div class="comment">Vote libre : tape la case de ton choix</div>';
+  } else cl.innerHTML = `<div class="comment">${S.pause ? 'Le capitaine a mis la chasse en pause' : 'Prochaine manche dans quelques secondes…'}</div>`;
+  const seuil = S.seuilActuel || C.dons.seuilCreuseImmediat;
+  const ou = C.dons.creuseLibre === false ? 'une des cases proposées' : 'n’importe quelle case';
+  $('comment').innerHTML = (S.round?.prolongations ? '⏳ <b>Personne n’a voté</b> : la manche continue jusqu’au premier vote · ' : '') + (S.round?.countsCaches ? '🌫️ <b>Brouillard</b> : les votes sont cachés cette manche · ' : '') +
+    `Tape <code>${C.chat?.commande || '!creuse'} B7</code> pour voter · 1 € = ${C.dons.votesParEuro} votes` +
+    (C.dons.ajouteCandidate !== false ? ' (une case hors vote est ajoutée au vote)' : '') +
+    ` · don ≥ ${seuil} €${seuil !== C.dons.seuilCreuseImmediat ? ' <b>(sommeil profond)</b>' : ''} + case = creuse direct ${ou}`;
+
+  // totaux
+  $('totDons').textContent = fmt(S.totals.dons) + ' €';
+  $('totKm').textContent = fmt(S.totals.km) + ' km';
+  $('totDoublons').textContent = S.totals.doublons;
+
+  // dettes
+  const d = S.dettes.filter(x => !x.done).slice(-9).reverse();
+  $('nbDettes').textContent = S.dettes.filter(x => !x.done).length;
+  $('dettes').innerHTML = d.length ? d.map(x => `<li class="${x.ultime ? 'ultime' : ''}${x.duo ? ' duo' : ''}"><span class="c">${x.cell}</span><span>${x.duo ? '<span class="duo-tag">🤝 à deux</span>' : ''}${esc(x.text)}${x.quand === 'prochain-live' ? ' <em>(prochain live)</em>' : ''}</span></li>`).join('')
+    : '<li class="vide">Aucune dette pour l’instant… creusez !</li>';
+
+  // classement
+  const medals = ['🥇', '🥈', '🥉', '4', '5'];
+  $('top').innerHTML = (S.top || []).map((p, i) => `<li><span class="r">${medals[i]}</span><span class="nom">${esc(p.nom)}${i === 0 && S.second ? ' <span class="second" title="Second du navire : vote ×2">⚓×2</span>' : ''}</span><span class="d"><b>${p.doublons}</b> 🪙</span></li>`).join('')
+    || '<li class="vide">Vote pour une case dorée et empoche ses doublons !</li>';
+
+  $('recomp').textContent = C.affichage?.recompense || ''; $('recomp').style.display = C.affichage?.recompense ? '' : 'none';
+
+  // dons
+  $('dons').innerHTML = S.dons.slice(0, 5).map(x => `<li><b>${fmt(x.montant)} €</b><span>${esc(x.nom)}${x.message ? ' — ' + esc(x.message) : ''}</span></li>`).join('') || '<li><span style="opacity:.6;font-style:italic">Aucun don pour le moment</span></li>';
+
+  // ticker
+  const phrases = C.affichage?.phrasesNuit || [];
+  $('ticker').textContent = phrases.join('     ⚓     ');
+  $('pause').classList.toggle('on', !!S.pause);
+}
+function fmt(n) { return Number(n || 0).toLocaleString('fr-FR', { maximumFractionDigits: 2 }); }
+function esc(s) { return String(s ?? '').replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c])); }
+
+// timer local
+setInterval(() => {
+  if (!S?.round || !C) { $('tsec').textContent = '--'; $('prog').style.strokeDashoffset = 326.7; return; }
+  const left = Math.max(0, Math.ceil((S.round.endsAt - Date.now()) / 1000));
+  $('tsec').textContent = left;
+  $('prog').style.strokeDashoffset = 326.7 * (1 - left / (S.round.dureeSec || C.round.dureeSec));
+}, 250);
+
+// révélation
+let revealQueue = [], revealing = false;
+function showReveal(cell, rec) {
+  revealQueue.push([cell, rec]);
+  if (!revealing) nextReveal();
+}
+function nextReveal() {
+  const item = revealQueue.shift();
+  if (!item) { revealing = false; return; }
+  revealing = true;
+  const [cell, rec] = item;
+  const el = rec.type === 'ncarte' ? null : $('c-' + cell); if (el) { el.classList.add('flip'); setTimeout(() => el.classList.remove('flip'), 800); }
+  const r = $('reveal');
+  r.className = 'reveal on ' + rec.type + (rec.duo ? ' duo' : '');
+  $('rIco').textContent = rec.duo ? '🤝' : ICO[rec.type]; $('rCell').textContent = rec.type === 'ncarte' ? `n°${rec.numero}` : cell; $('rType').textContent = rec.duo ? 'GAGE À DEUX !' : (TYPE[rec.type] || rec.type);
+  $('rLbl').textContent = rec.type === 'doublons' ? `+${rec.value} doublons` + (rec.gagnants?.length ? ` pour ${rec.gagnants.join(', ')}${rec.gagnants.length >= 6 ? '…' : ''}` : ' dans le coffre') : (rec.type === 'piege' && rec.gagnants?.length ? `${rec.label || ''} (−${rec.value} doublons pour ${rec.gagnants.join(', ')})` : (rec.type === 'piege' && rec.value ? `${rec.label || ''} (−${rec.value} doublons)` : (rec.label || '')));
+  $('rBy').textContent = rec.type === 'ncarte' ? 'Dons, km et dettes restent cumulés sur la semaine' : `creusée par ${rec.by}` + (rec.how === 'don' ? ' grâce à un don' : rec.how === 'auto' ? ' (personne ne votait…)' : '');
+  const dur = rec.type === 'sable' ? 4500 : rec.type === 'ncarte' ? 10000 : rec.type === 'tresor' ? 14000 : 8000;
+  setTimeout(() => { r.classList.remove('on'); setTimeout(nextReveal, 400); }, dur);
+}
+function showToast(html, ms = 6000) {
+  const t = $('toast'); t.innerHTML = html; t.classList.add('on');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), ms);
+}
+
+// websocket
+function connect() {
+  const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host);
+  ws.onmessage = (m) => {
+    const d = JSON.parse(m.data);
+    if (d.ev === 'state') { S = d.state; C = d.config; render(); }
+    else if (d.ev === 'vote') {
+      if (S?.round) { S.round.counts = d.counts; render(); }
+      const v = $('c-' + d.cell)?.querySelector('.votes'); if (v) { v.classList.add('bump'); setTimeout(() => v.classList.remove('bump'), 200); }
+    }
+    else if (d.ev === 'reveal') showReveal(d.cell, d.rec);
+    else if (d.ev === 'nouvelle-carte') showReveal('🗺️', { type: 'ncarte', label: `Une nouvelle carte vient d'être déroulée. Tout est à re-creuser !`, by: 'le capitaine', how: 'carte', numero: d.numero });
+    else if (d.ev === 'second') showToast(`⚓ ${esc(d.nom)} devient Second du navire<small>son vote compte double</small>`, 8000);
+    else if (d.ev === 'don') showToast(`💛 ${esc(d.nom)} — ${fmt(d.montant)} €<small>${esc(d.effet || 'merci !')}</small>`);
+  };
+  ws.onclose = () => setTimeout(connect, 2000);
+  ws.onerror = () => ws.close();
+}
+connect();
+</script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+{
+  "chaine": "burri_tv",
+  "grille": {
+    "cols": 12,
+    "rows": 8
+  },
+  "round": {
+    "dureeSec": 240,
+    "pauseSec": 12,
+    "candidats": 4,
+    "voteLibre": false,
+    "minVotes": 1,
+    "autoCreuseSiVide": false
+  },
+  "carte": {
+    "resetAuto": true,
+    "heureReset": "22:00",
+    "resetDoublons": true
+  },
+  "dons": {
+    "votesParEuro": 2,
+    "seuilCreuseImmediat": 10,
+    "creuseLibre": true,
+    "ajouteCandidate": true,
+    "kmParEuro": 0.1
+  },
+  "chat": {
+    "commande": "!creuse",
+    "voteSansCommande": true,
+    "botName": "",
+    "regexDon": ""
+  },
+  "streamlabs": {
+    "socketToken": ""
+  },
+  "bot": {
+    "username": "",
+    "oauth": "",
+    "annoncerDansLeChat": false
+  },
+  "affichage": {
+    "titre": "La carte au trésor du Capitaine Burri",
+    "sousTitre": "Le capitaine dort… le chat creuse !",
+    "equipe": "Team Chien",
+    "couleur": "#F5C518",
+    "recompense": "🏆 Le 1er en fin d'event gagne le rôle VIP",
+    "phrasesNuit": [
+      "Le capitaine ronfle. Creusez en silence.",
+      "Chaque don pousse la pelle un peu plus loin.",
+      "10 € = 1 km à marcher pour le capitaine. Faites-le souffrir.",
+      "Un don avec une case (ex : B7) = on creuse là, tout de suite.",
+      "Les gages trouvés seront exécutés au réveil. Sans négociation.",
+      "Tapez !creuse + la case pour voter.",
+      "Le trésor est quelque part… les indices vous guideront.",
+      "Vote pour une case dorée : si elle sort, les doublons sont pour toi. Le classement dure tout l'event.",
+      "Le premier du classement des pirates à la fin de l'event gagne le rôle VIP !",
+      "Ce week-end, un matelot rejoint le capitaine : les gages 🤝 se font à deux !"
+    ]
+  },
+  "generation": {
+    "proportions": {
+      "doublons": 22,
+      "gage": 14,
+      "indice": 5,
+      "secret": 4,
+      "piege": 6,
+      "capitaine": 3
+    },
+    "effetsCapitaine": [
+      "annuleDette",
+      "moinsKm",
+      "brouillard",
+      "mancheCourte",
+      "perteDoublons",
+      "seuilDouble",
+      "scelle"
+    ],
+    "gageUltime": "Lignes de punition : écrire 100 fois à la main « Je ne laisserai plus le chat creuser pendant que je dors », en live avec la cam sur la feuille.",
+    "secrets": [
+      "🔓 Palier caché découvert : 50 € → Burri reste en costume jusqu'à la fin de l'event",
+      "🔓 Palier caché découvert : 750 € → Burri se rase la barbe",
+      "🔓 Palier caché découvert : 1500 € → Burri dessine le portrait de l'animal de chaque donateur (dons de 10 € et plus)",
+      "🔓 Palier caché découvert : 1800 € → Burri fait un ou plusieurs streams en faisant le tour de Strasbourg"
+    ],
+    "pieges": [
+      "Le perroquet a tout mangé.",
+      "Tempête ! Le capitaine doit refaire son lit en direct au réveil.",
+      "Un rat a rongé la carte : la prochaine manche dure deux fois moins longtemps.",
+      "Mutinerie : le capitaine parle uniquement en rimes pendant les 10 premières minutes du réveil.",
+      "Kraken ! Le chat perd des doublons mais le capitaine gagne un gage : 20 pompes au réveil."
+    ],
+    "banqueGages": [
+      {
+        "label": "Lire les messages de la nuit avec une voix de narrateur de documentaire animalier",
+        "quand": "reveil"
+      },
+      {
+        "label": "Petit-déj commenté façon Top Chef, avec notes sur 20",
+        "quand": "reveil"
+      },
+      {
+        "label": "Raconter ton rêve de la nuit (vrai ou inventé) comme un conte de pirate",
+        "quand": "reveil"
+      },
+      {
+        "label": "Présenter la météo du navire façon présentateur TV",
+        "quand": "reveil"
+      },
+      {
+        "label": "Le chat choisit le titre du stream de la journée",
+        "quand": "reveil"
+      },
+      {
+        "label": "Le chat choisit ta photo de profil Twitch pour 24h",
+        "quand": "reveil"
+      },
+      {
+        "label": "Chanter en entier un générique de dessin animé choisi par le chat",
+        "quand": "reveil"
+      },
+      {
+        "label": "Imiter 3 animaux du refuge choisis par le chat",
+        "quand": "reveil"
+      },
+      {
+        "label": "Réciter une fable de La Fontaine en mode rappeur",
+        "quand": "reveil"
+      },
+      {
+        "label": "Répondre au chat pendant 10 min uniquement par « oui », « non » ou « arrr »",
+        "quand": "reveil"
+      },
+      {
+        "label": "Écrire un haïku sur un donateur de la nuit et le lire solennellement",
+        "quand": "reveil"
+      },
+      {
+        "label": "Faire une pub de 30 s pour un objet random de ta pièce",
+        "quand": "reveil"
+      },
+      {
+        "label": "Dessiner la mascotte du chat sur Paint en 60 s, les yeux fermés",
+        "quand": "reveil"
+      },
+      {
+        "label": "Une chaussette sur la main répond au chat à ta place pendant 10 min",
+        "quand": "reveil"
+      },
+      {
+        "label": "T-shirt à l'envers toute la matinée, sans explication",
+        "quand": "reveil"
+      },
+      {
+        "label": "Jouer 20 min avec la main non dominante",
+        "quand": "prochain-live"
+      },
+      {
+        "label": "10 pompes à chaque mort pendant 30 min",
+        "quand": "prochain-live"
+      },
+      {
+        "label": "Le chat choisit un mot interdit pendant 1h, 1 pompe par oubli",
+        "quand": "prochain-live"
+      },
+      {
+        "label": "Commenter ta partie comme un match de foot pendant 15 min",
+        "quand": "prochain-live"
+      },
+      {
+        "label": "Filtre webcam choisi par le chat pendant 1h",
+        "quand": "prochain-live"
+      },
+      {
+        "label": "Dire « moussaillon » à chaque phrase adressée au chat pendant 1h",
+        "quand": "prochain-live"
+      },
+      {
+        "label": "Parler uniquement en rimes pendant 10 min",
+        "quand": "prochain-live"
+      },
+      {
+        "label": "Jouer 20 min à un jeu de ton enfance en mode nostalgie",
+        "quand": "prochain-live"
+      },
+      {
+        "label": "Tier list sur un sujet choisi par le chat",
+        "quand": "prochain-live"
+      },
+      {
+        "label": "Blind test des cris d'animaux, 1 km de plus par erreur",
+        "quand": "prochain-live"
+      },
+      {
+        "label": "Marcher les km de dette de la nuit, avec preuve à l'écran",
+        "quand": "prochain-live"
+      }
+    ],
+    "banqueGagesDuo": [
+      {
+        "mode": "ensemble",
+        "label": "Duel de pompes avec {pote} : le chat compte à voix haute, le perdant en refait 10."
+      },
+      {
+        "mode": "ensemble",
+        "label": "Générique de dessin animé en duo avec {pote}, une ligne chacun, le chat choisit lequel."
+      },
+      {
+        "mode": "ensemble",
+        "label": "Blind test en équipe : 5 extraits choisis par le chat, chaque mauvaise réponse = 1 km de plus pour le capitaine."
+      },
+      {
+        "mode": "ensemble",
+        "label": "Chorégraphie synchronisée de 30 secondes avec {pote} sur la musique choisie par le chat."
+      },
+      {
+        "mode": "ensemble",
+        "label": "Interview croisée : le capitaine et {pote} révèlent chacun une anecdote gênante sur l'autre."
+      },
+      {
+        "mode": "ensemble",
+        "label": "Petit-déj en tandem : le capitaine a les yeux bandés, {pote} guide uniquement à la voix."
+      },
+      {
+        "mode": "ensemble",
+        "label": "Dessin à quatre mains de la mascotte du chat sur Paint, 60 secondes, interdiction de se parler."
+      },
+      {
+        "mode": "ensemble",
+        "label": "Échange de rôles pendant 15 minutes : {pote} anime le stream, le capitaine fait le chat."
+      },
+      {
+        "mode": "ensemble",
+        "label": "« Je n'ai jamais » version stream : 5 affirmations du chat, réponses obligatoires pour les deux."
+      },
+      {
+        "mode": "ensemble",
+        "label": "Time's Up pirate : {pote} fait deviner 5 mots au capitaine en 60 s, chaque échec = 5 pompes pour les deux."
+      },
+      {
+        "mode": "ensemble",
+        "label": "Karaoké à deux sur le pire tube choisi par le chat, en accent pirate."
+      },
+      {
+        "mode": "ensemble",
+        "label": "Quiz « qui connaît le mieux l'autre » : 5 questions du chat, le perdant marche 1 km de plus."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} choisit la tenue du capitaine pour l'heure qui suit, avec ce qu'il y a dans l'armoire."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} maquille le capitaine en 5 minutes. Le résultat reste jusqu'au prochain gage."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} pioche 3 messages du chat et le capitaine doit les mimer sans parler."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} a droit à un spray d'eau surprise dans les 30 prochaines minutes, quand il veut."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} coiffe le capitaine façon pirate avec ce qu'il trouve dans la pièce."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} choisit le prochain jeu ET le handicap (main non dominante, souris inversée, sans son…)."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} donne 3 consignes au capitaine pour la prochaine partie (ex : dire « moussaillon » à chaque mort)."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} prend le micro 10 minutes : le capitaine est muet et {pote} répond au chat à sa place."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} raconte l'histoire la plus honteuse du capitaine (validée par le capitaine avant, mais sans droit de couper)."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} choisit une chanson que le capitaine doit chanter à chaque fois qu'il perd une vie pendant 30 minutes."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} rebaptise le capitaine pour l'heure qui suit, et le chat doit utiliser ce nom."
+      },
+      {
+        "mode": "inflige",
+        "label": "{pote} sert un « cocktail du second » (comestible, non alcoolisé, ingrédients du frigo) que le capitaine doit finir."
+      }
+    ]
+  },
+  "cellules": {},
+  "duo": {
+    "nomPote": "",
+    "dates": [
+      "2026-10-02",
+      "2026-10-03",
+      "2026-10-04"
+    ],
+    "nbParCarte": 6
+  },
+  "second": {
+    "voteDouble": true
+  }
+}
