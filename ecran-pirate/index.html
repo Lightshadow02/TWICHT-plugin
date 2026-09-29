@@ -107,7 +107,8 @@ svg{display:block}
   background:repeating-linear-gradient(0deg,rgba(0,0,0,.09) 0 2px,rgba(0,0,0,0) 2px 10px),#5b3418;
   box-shadow:0 14px 30px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,220,160,.18)}
 .clou{position:absolute;top:32px;width:14px;height:14px;border-radius:50%;background:var(--encre);box-shadow:inset 0 2px 0 #8a6a40}
-#b-contenu{position:absolute;inset:0 44px;display:flex;align-items:center;justify-content:center;gap:18px;transition:opacity .6s;white-space:nowrap}
+#b-contenu{position:absolute;inset:0 44px;display:flex;align-items:center;justify-content:center;transition:opacity .6s;white-space:nowrap}
+.b-ligne{display:inline-flex;align-items:center;gap:18px;flex-shrink:0;transform-origin:50% 50%}
 #b-contenu.cache{opacity:0}
 .b-txt{font-size:36px;font-weight:700;color:#f3e4bd}
 .b-cmd{font-size:34px;font-weight:800;color:var(--encre);background:var(--or);padding:4px 16px;border-radius:8px}
@@ -288,7 +289,7 @@ body.panique #bulle,body.panique #emotes{display:none}
     <div class="plaque">
       <div class="rivet" style="left:12px;top:12px"></div><div class="rivet" style="right:12px;top:12px"></div>
       <div class="rivet" style="left:12px;bottom:12px"></div><div class="rivet" style="right:12px;bottom:12px"></div>
-      <div class="etiquette">Trésor de l'équipage</div>
+      <div class="etiquette" id="t-label">Trésor de l'équipage</div>
       <div id="t-montant">0 €</div>
       <div id="t-objectif"></div>
     </div>
@@ -371,12 +372,16 @@ body.panique #bulle,body.panique #emotes{display:none}
 const P = new URLSearchParams(location.search);
 // accepte « burri_tv », « #burri_tv » ou une URL Twitch (même le popout du chat)
 const extraireChaine = s => { const m = String(s).match(/twitch\.tv\/(?:popout\/)?([a-z0-9_]{3,25})/i); return (m ? m[1] : String(s).replace(/^#/, '')).trim().toLowerCase(); };
+const MODE_CAGNOTTE = P.get('cagnotte') === 'global' ? 'global' : 'perso';
 const CONFIG = {
+  // Cagnotte et dons lus sur l'API officielle Gamers4Pets (?g4p=0 pour revenir au comptage local)
+  g4p: P.get('g4p') === '0' ? '' : extraireChaine(P.get('g4p') || P.get('chaine') || 'burri_tv'),
+  cagnotte: MODE_CAGNOTTE,                      // perso = ma cagnotte · global = toute la cagnotte G4P
   chaine: extraireChaine(P.get('chaine') || 'burri_tv'),
-  streamlabsToken: P.get('token') || '',        // Socket API token Streamlabs (jamais dans le fichier ni sur GitHub)
+  streamlabsToken: P.get('token') || '',        // facultatif : Socket API token Streamlabs, pour les follows (jamais dans le fichier ni sur GitHub)
   titre: P.get('titre') || 'Burri',
   sousTitre: P.get('sous') || 'Gamers4Pets 2026',
-  objectif: parseFloat(P.get('objectif') || 2000),
+  objectif: P.has('objectif') ? parseFloat(P.get('objectif')) || 0 : (MODE_CAGNOTTE === 'global' ? 0 : 2000),
   total: P.has('total') ? parseFloat(P.get('total')) : null, // sinon reprend le dernier total connu
   debut: P.get('debut') || '',                  // ex. 2026-10-10T18:00 → active le compte à rebours
   dureeH: parseFloat(P.get('duree') || 24),
@@ -519,9 +524,15 @@ let total = CONFIG.total ?? parseFloat(stock.get('ecranPirate.total') || 0);
 function majTresor(){
   stock.set('ecranPirate.total', total);
   const el = $('#t-montant'); el.textContent = euros(total); ajusterTaille(el, 124, 60);
-  // échelle log + un fond d'or : le coffre bouge même loin d'un gros objectif
-  const r = Math.max(0, Math.min(1, Math.log10(1 + total) / Math.log10(1 + CONFIG.objectif)));
+  // racine carrée + un fond d'or : le coffre bouge dès les premiers dons
+  const r = CONFIG.objectif > 0 ? Math.sqrt(Math.max(0, Math.min(1, total / CONFIG.objectif))) : .6;
   $('#or').style.transform = `translateY(${Math.round((1 - (.3 + .7 * r)) * 120)}px)`;
+}
+function majObjectif(){
+  const el = $('#t-objectif');
+  if (CONFIG.objectif > 0) el.textContent = `objectif ${euros(CONFIG.objectif)}`;
+  else if (CONFIG.cagnotte === 'global' && g4p.equipes.length) el.textContent = g4p.equipes.map(e => `Team ${e.nom} ${euros(e.cagnotte)}`).join(' · ');
+  else el.textContent = '';
 }
 function majButin(b){
   if (!b) return;
@@ -555,11 +566,15 @@ function bandeauSuivant(){
   const c = $('#b-contenu');
   c.classList.add('cache');
   setTimeout(() => {
-    const m = CONFIG.messages[iMsg++ % CONFIG.messages.length];
+    const liste = [...CONFIG.messages, ...messagesG4P()];
+    const m = liste[iMsg++ % liste.length];
     c.innerHTML = '';
-    c.insertAdjacentHTML('beforeend', ICONES[m.icone] || '');
-    const bout = (cls, txt) => { if (!txt) return; const s = document.createElement('div'); s.className = cls; s.textContent = txt; c.appendChild(s); };
+    const ligne = document.createElement('div'); ligne.className = 'b-ligne'; c.appendChild(ligne);
+    ligne.insertAdjacentHTML('beforeend', ICONES[m.icone] || '');
+    const bout = (cls, txt) => { if (!txt) return; const s = document.createElement('div'); s.className = cls; s.textContent = txt; ligne.appendChild(s); };
     bout('b-txt', m.avant); bout('b-cmd', m.cmd); bout('b-txt', m.apres);
+    const dispo = c.clientWidth, w = ligne.scrollWidth;
+    ligne.style.transform = w > dispo ? `scale(${(dispo / w).toFixed(3)})` : '';
     c.classList.remove('cache');
   }, 600);
 }
@@ -606,7 +621,16 @@ function explosionPieces(n){
 
 /* ---------- grosses alertes (dons, subs, bits) ---------- */
 const fileAlertes = []; let alerteEnCours = false;
+// un même don peut arriver par Streamlabs ET par l'API G4P : on ne l'annonce qu'une fois
+const annonces = new Map();
+function dejaAnnonce(nom, montant){
+  const k = normaliser(String(nom || '')) + '|' + Math.round(+montant || 0), now = Date.now();
+  for (const [cle, t] of annonces) if (now - t > 5 * 60e3) annonces.delete(cle);
+  if (annonces.has(k)) return true;
+  annonces.set(k, now); return false;
+}
 function alerte(a){
+  if (a.type === 'don' && a.source && dejaAnnonce(a.nom, a.montant)) return;
   a.nom = nomSur(a.nom);
   a.message = a.message ? (verifierTexte(a.message, 140) || '') : '';
   fileAlertes.push(a);
@@ -620,6 +644,8 @@ function alerteSuivante(){
     don:  ['Un don tombe dans le coffre', euros(a.montant || 0), 'de butin'],
     sub:  ['Un nouveau matelot à bord', a.mois > 1 ? `${a.mois} mois` : 'Bienvenue', a.mois > 1 ? 'à bord' : 'matelot'],
     bits: ['Des bits pour le trésor', String(a.montant || ''), 'bits'],
+    gift: ['Des abonnements offerts', String(a.montant || 1), (a.montant || 1) > 1 ? 'subs offerts' : 'sub offert'],
+    raid: ["Un équipage à l'abordage", String(a.montant || ''), (a.montant || 0) > 1 ? 'pirates' : 'pirate'],
   }[a.type] || ['', '', ''];
   $('#a-type').textContent = T[0];
   $('#a-sceau-val').textContent = T[1];
@@ -630,11 +656,10 @@ function alerteSuivante(){
   $('#alerte').classList.add('on');
   ajusterTaille(nom, 160, 64);
   if (a.type === 'don' && !a.test){
-    total += a.montant || 0;
-    setTimeout(majTresor, 700);
+    if (!CONFIG.g4p){ total += a.montant || 0; setTimeout(majTresor, 700); }   // avec G4P, le total vient de l'API
     majButin({ nom: a.nom, montant: a.montant || 0 });
   }
-  explosionPieces(a.type === 'don' ? Math.min(90, 25 + Math.round((a.montant || 0) * 2)) : 30);
+  explosionPieces(a.type === 'don' ? Math.min(90, 25 + Math.round((a.montant || 0) * 2)) : a.type === 'raid' ? 70 : 30);
   stage.classList.remove('fete'); void stage.offsetWidth; stage.classList.add('fete');
   setTimeout(() => {
     $('#alerte').classList.remove('on');
@@ -642,12 +667,19 @@ function alerteSuivante(){
   }, 7000);
 }
 
-let toastTimer;
+const fileToasts = []; let toastActif = false;
 function toast(nom, etiquette = 'Nouveau matelot'){
-  $('#toast-etiq').textContent = etiquette;
-  $('#toast-nom').textContent = nom;
-  const t = $('#toast'); t.classList.add('on');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 5000);
+  fileToasts.push([nom, etiquette]);
+  if (!toastActif) toastSuivant();
+}
+function toastSuivant(){
+  const t = fileToasts.shift(), el = $('#toast');
+  if (!t){ toastActif = false; return; }
+  toastActif = true;
+  $('#toast-nom').textContent = t[0];
+  $('#toast-etiq').textContent = t[1];
+  el.classList.add('on');
+  setTimeout(() => { el.classList.remove('on'); setTimeout(toastSuivant, 800); }, 4500);
 }
 
 /* ---------- filtre anti-abus ---------- */
@@ -903,9 +935,13 @@ function initChat(){
           if (!chatAnnonce){ chatAnnonce = true; toast('#' + CONFIG.chaine, 'Chat connecté'); }
           console.log('[chat] connecté à #' + CONFIG.chaine);
           break;
-        case 'PRIVMSG':
-          surMessage(tagsTwitch(m.tags, m.prefixe), m.texte.replace(/^\u0001ACTION (.*)\u0001$/, '$1'));
+        case 'PRIVMSG': {
+          const t = tagsTwitch(m.tags, m.prefixe), texte = m.texte.replace(/^\u0001ACTION (.*)\u0001$/, '$1');
+          if (+m.tags.bits > 0) alerte({ type:'bits', nom:t['display-name'], montant:+m.tags.bits, message:texte.replace(/\b[a-z]+\d+\b/gi, '').trim() });
+          surMessage(t, texte);
           break;
+        }
+        case 'USERNOTICE': evenementTwitch(m.tags, m.texte); break;
         case 'CLEARMSG': { const id = m.tags['target-msg-id']; supprimes.add(id); retirer(e => e.id === id); break; }
         case 'CLEARCHAT': {                                        // timeout / ban (ou chat vidé par un modo)
           const user = (m.texte || '').toLowerCase();
@@ -923,16 +959,117 @@ function initChat(){
   };
 }
 
-/* ---------- Streamlabs (dons, subs, bits, follows) ---------- */
+// subs, subs offerts et raids arrivent directement par le chat Twitch
+const cadeaux = new Map();
+function evenementTwitch(t, texte){
+  const nom = t['display-name'] || t.login, login = (t.login || '').toLowerCase();
+  switch (t['msg-id']){
+    case 'sub': case 'resub':
+      alerte({ type:'sub', nom, mois: +t['msg-param-cumulative-months'] || 1, message: texte });
+      break;
+    case 'submysterygift': {                              // « X offre 5 subs » : une seule alerte
+      const n = +t['msg-param-mass-gift-count'] || 1;
+      cadeaux.set(login, { reste: n, jusqua: Date.now() + 60e3 });
+      alerte({ type:'gift', nom, montant: n });
+      break;
+    }
+    case 'subgift': {                                     // les subs d'un lot déjà annoncé sont ignorés
+      const g = cadeaux.get(login);
+      if (g && g.reste > 0 && Date.now() < g.jusqua){ g.reste--; break; }
+      alerte({ type:'gift', nom, montant: 1 });
+      break;
+    }
+    case 'raid':
+      alerte({ type:'raid', nom: t['msg-param-displayName'] || nom, montant: +t['msg-param-viewerCount'] || 0 });
+      break;
+  }
+}
+
+/* ---------- API Gamers4Pets : cagnotte, paliers et derniers dons ----------
+   API officielle, ouverte et sans clé (streamers.gamers4pets.fr/api-doc).
+   Interrogée toutes les 10 s, appels enchaînés un par un comme le demande la doc. */
+const G4P_API = 'https://streamers.gamers4pets.fr/api/v1';
+const g4p = {
+  vus: new Set((() => { try { return JSON.parse(stock.get('ecranPirate.donsVus') || '[]'); } catch(e){ return []; } })()),
+  perso: null, palier: null, global: null, equipe: null, equipes: [],
+  dernierTotal: null, pause: 0, erreurs: 0, annonce: false, tour: 0,
+};
+async function g4pGet(chemin){
+  const r = await fetch(G4P_API + chemin);
+  if (r.status === 429){ g4p.pause = Date.now() + 1000 * (Number(r.headers.get('Retry-After')) || 60); throw new Error('quota G4P'); }
+  if (!r.ok) throw new Error('G4P HTTP ' + r.status);
+  return r.json();
+}
+function fixerTotal(v){
+  if (typeof v !== 'number' || v === g4p.dernierTotal) return;
+  g4p.dernierTotal = v; total = v; majTresor();
+}
+const nomDonateur = p => /^anonym/i.test(p || '') ? 'Anonyme' : p;
+async function majCagnotteG4P(){
+  const d = await g4pGet(`/streamers?twitch=${encodeURIComponent(CONFIG.g4p)}&paliers=actuel&descriptions=0`);
+  const s = (d.streamers || [])[0];
+  if (!s){ if (!g4p.introuvable){ g4p.introuvable = true; toast(CONFIG.g4p, 'Inconnu sur Gamers4Pets'); } return false; }
+  g4p.perso = s.cagnotte; g4p.equipe = s.equipe || null;
+  g4p.palier = (s.paliers || []).find(x => x.actuel) || null;
+  if (CONFIG.cagnotte === 'perso') fixerTotal(s.cagnotte);
+  return true;
+}
+async function majGlobalG4P(){
+  const d = await g4pGet('/cagnottes');
+  g4p.global = d.total; g4p.equipes = d.equipes || [];
+  if (CONFIG.cagnotte === 'global') fixerTotal(d.total);
+  majObjectif();
+}
+async function majDonsG4P(){
+  const d = await g4pGet(`/dons?twitch=${encodeURIComponent(CONFIG.g4p)}&limite=20`);
+  const dons = (d.dons || []).slice().reverse();          // du plus ancien au plus récent
+  const premier = g4p.vus.size === 0;                      // tout premier lancement : on ne rejoue pas l'historique
+  for (const x of dons){
+    const id = String(x.id);
+    if (g4p.vus.has(id)) continue;
+    g4p.vus.add(id);
+    const age = Date.now() - new Date(x.date).getTime();
+    if (premier || age > 20 * 60e3) continue;             // dons trop anciens : pas d'alerte
+    alerte({ type:'don', nom: nomDonateur(x.pseudo), montant: +x.montant || 0, source:'g4p' });
+  }
+  if (premier && dons.length){ const x = dons[dons.length - 1]; majButin({ nom: nomSur(nomDonateur(x.pseudo)), montant: +x.montant || 0 }); }
+  stock.set('ecranPirate.donsVus', JSON.stringify([...g4p.vus].slice(-200)));
+}
+function messagesG4P(){
+  const l = [];
+  if (g4p.palier) l.push({ icone:'patte', avant:'Prochain palier :', cmd: euros(g4p.palier.montant), apres: g4p.palier.titre });
+  if (CONFIG.cagnotte === 'perso' && g4p.global != null){
+    const eq = g4p.equipes.find(e => e.nom === g4p.equipe);
+    l.push({ icone:'piece', avant:'Cagnotte G4P :', cmd: euros(g4p.global), apres: eq ? `Team ${eq.nom} : ${euros(eq.cagnotte)}` : '' });
+  }
+  if (CONFIG.cagnotte === 'global' && g4p.perso != null) l.push({ icone:'piece', avant:'Ma cagnotte :', cmd: euros(g4p.perso), apres: '' });
+  return l;
+}
+async function boucleG4P(){
+  const attente = g4p.pause - Date.now();
+  if (attente > 0) return setTimeout(boucleG4P, attente + 500);
+  try {
+    if (await majCagnotteG4P()) await majDonsG4P();
+    if (g4p.tour++ % 3 === 0) await majGlobalG4P();
+    g4p.erreurs = 0;
+    if (!g4p.annonce){ g4p.annonce = true; toast(CONFIG.cagnotte === 'global' ? 'Cagnotte G4P' : 'Cagnotte de ' + CONFIG.g4p, 'Gamers4Pets connecté'); }
+  } catch(e){
+    console.warn('[g4p]', e);
+    if (++g4p.erreurs === 3) toast('streamers.gamers4pets.fr', 'Cagnotte injoignable');
+  }
+  setTimeout(boucleG4P, 10000);
+}
+
+/* ---------- Streamlabs (facultatif : follows, et dons Streamlabs hors G4P) ---------- */
 function initStreamlabs(){
   if (!CONFIG.streamlabsToken) return;
   if (typeof io === 'undefined') return console.warn('socket.io non chargé');
   const s = io(`https://sockets.streamlabs.com?token=${encodeURIComponent(CONFIG.streamlabsToken)}`, { transports:['websocket'] });
   s.on('event', e => {
     for (const m of (Array.isArray(e.message) ? e.message : [])){
-      if (e.type === 'donation') alerte({ type:'don', nom:m.name, montant:parseFloat(m.amount) || 0, message:m.message });
-      else if (e.type === 'subscription' || e.type === 'resub') alerte({ type:'sub', nom:m.name, mois:+m.months || 1 });
-      else if (e.type === 'bits') alerte({ type:'bits', nom:m.name, montant:m.amount, message:m.message });
+      // subs, bits et raids viennent déjà du chat Twitch : ignorés ici pour éviter les doublons
+      if (e.type === 'donation' || e.type === 'streamlabscharitydonation')
+        alerte({ type:'don', nom: m.name || m.from, montant: parseFloat(m.amount) || 0, message: m.message, source:'streamlabs' });
       else if (e.type === 'follow') toast(nomSur(m.name));
     }
   });
@@ -957,7 +1094,8 @@ function demo(){
 /* ---------- démarrage ---------- */
 $('#t-titre').textContent = CONFIG.titre;
 $('#t-sous').textContent = CONFIG.sousTitre;
-$('#t-objectif').textContent = `objectif ${euros(CONFIG.objectif)}`;
+$('#t-label').textContent = !CONFIG.g4p ? "Trésor de l'équipage" : CONFIG.cagnotte === 'global' ? 'Cagnotte Gamers4Pets' : 'Ma cagnotte';
+majObjectif();
 appliquerPalette(CONFIG.ambiance);
 construireDecor();
 ajusterEcran();
@@ -967,7 +1105,7 @@ if (document.fonts) document.fonts.ready.then(majTresor);
 majChrono(); setInterval(majChrono, 1000);
 bandeauSuivant(); setInterval(bandeauSuivant, 9000);
 if (CONFIG.demo) demo();
-else { initChat(); initStreamlabs(); }
+else { initChat(); initStreamlabs(); if (CONFIG.g4p) boucleG4P(); }
 </script>
 </body>
 </html>
