@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Écran Pirate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+/* Couleurs animables : !couleur change l'ambiance en douceur */
+@property --ciel0 { syntax:'<color>'; inherits:true; initial-value:#050918; }
+@property --ciel1 { syntax:'<color>'; inherits:true; initial-value:#14254a; }
+@property --ciel2 { syntax:'<color>'; inherits:true; initial-value:#2d4b78; }
+@property --mer0  { syntax:'<color>'; inherits:true; initial-value:#1f5189; }
+@property --mer1  { syntax:'<color>'; inherits:true; initial-value:#163f6e; }
+@property --mer2  { syntax:'<color>'; inherits:true; initial-value:#0d2c51; }
+@property --mer3  { syntax:'<color>'; inherits:true; initial-value:#081c36; }
+@property --ecume { syntax:'<color>'; inherits:true; initial-value:#9fcdee; }
+:root{
+  --ciel0:#050918; --ciel1:#14254a; --ciel2:#2d4b78;
+  --mer0:#1f5189; --mer1:#163f6e; --mer2:#0d2c51; --mer3:#081c36; --ecume:#9fcdee;
+  --or:#f4c65a; --or-clair:#f6c955; --bois:#3a2211; --bois-fonce:#1e1007; --laiton:#c7973a;
+  --parchemin:#f1ddae; --parchemin2:#efdcaf; --encre:#2c180a; --encre-rouge:#8e2a12; --sable-txt:#e8cf94;
+  transition: --ciel0 2.5s, --ciel1 2.5s, --ciel2 2.5s, --mer0 2.5s, --mer1 2.5s, --mer2 2.5s, --mer3 2.5s, --ecume 2.5s;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;cursor:none}
+body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:#fff6e0;-webkit-font-smoothing:antialiased}
+
+/* La scène fait toujours 1920×1080 et s'adapte à l'écran */
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;transform-origin:50% 50%;
+  background:linear-gradient(180deg,var(--ciel0) 0%,var(--ciel1) 42%,var(--ciel2) 60%)}
+.abs{position:absolute}
+svg{display:block}
+
+/* ---------- décor ---------- */
+.etoile{position:absolute;border-radius:50%;background:#fff8e6;animation:scint var(--d) ease-in-out infinite;animation-delay:var(--dl)}
+@keyframes scint{50%{opacity:.12}}
+.nuage{position:absolute;border-radius:50%;background:radial-gradient(ellipse,rgba(190,205,240,.10),rgba(190,205,240,0) 70%);animation:derive var(--t) ease-in-out infinite alternate}
+@keyframes derive{to{transform:translateX(var(--dx))}}
+#halo{left:215px;top:65px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,236,180,.24),rgba(255,236,180,0) 68%)}
+#lune{left:300px;top:150px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#fffbea 0%,#ebdfb1 58%,#c9b986 100%)}
+.cratere{position:absolute;border-radius:50%;background:rgba(150,130,80,.2)}
+.vague path.fond{transition:fill 2.5s}
+.reflet{position:absolute;height:4px;border-radius:2px;background:#ffeec2;animation:miroite var(--d) ease-in-out infinite alternate}
+@keyframes miroite{to{opacity:.08;transform:scaleX(.7)}}
+#bateau-route{left:0;top:560px;width:150px;animation:navigue 260s linear infinite}
+#bateau{animation:tangue 5s ease-in-out infinite;transform-origin:50% 85%}
+@keyframes navigue{from{transform:translateX(-220px)}to{transform:translateX(2100px)}}
+@keyframes tangue{50%{transform:rotate(-3deg) translateY(3px)}}
+#rayons{left:510px;top:180px;width:900px;height:560px;opacity:.45;transition:opacity 1.2s;
+  background:repeating-conic-gradient(from -70deg at 50% 100%,rgba(255,214,120,.12) 0deg 5deg,rgba(255,214,120,0) 5deg 14deg);
+  -webkit-mask-image:linear-gradient(0deg,#000 5%,transparent 85%);mask-image:linear-gradient(0deg,#000 5%,transparent 85%)}
+#lueur{left:580px;top:500px;width:760px;height:520px;border-radius:50%;opacity:.6;transition:opacity 1.2s;
+  background:radial-gradient(ellipse,rgba(255,200,90,.5) 0%,rgba(255,200,90,0) 65%)}
+#stage.fete #rayons{opacity:1} #stage.fete #lueur{opacity:1}
+#palmier{left:560px;top:535px;transform-origin:58% 100%;animation:vent 7s ease-in-out infinite}
+@keyframes vent{50%{transform:rotate(1.6deg)}}
+#tissu{transform-origin:25px 75px;animation:flotte 3.2s ease-in-out infinite}
+@keyframes flotte{50%{transform:skewY(-3deg) scaleX(.96)}}
+#coffre{left:740px;top:560px;overflow:visible}
+#stage.fete #coffre{animation:saute .9s cubic-bezier(.3,1.6,.5,1)}
+@keyframes saute{30%{transform:translateY(-28px) scale(1.05)}}
+#or{transition:transform 1.8s cubic-bezier(.3,1.4,.5,1)}
+.eclat{transform-box:fill-box;transform-origin:center;animation:eclat 3.2s ease-in-out infinite}
+@keyframes eclat{0%,70%,100%{opacity:0;transform:scale(.3)}82%{opacity:1;transform:scale(1)}}
+
+/* ---------- interface (HUD) ---------- */
+#titre{left:72px;top:36px;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+#t-titre{font-family:'Pirata One',serif;font-weight:400;font-size:168px;line-height:1;color:var(--or);
+  text-shadow:0 7px 0 #3d2210,0 0 48px rgba(244,198,90,.35)}
+#t-sous{margin-left:8px;padding:8px 48px 10px;background:var(--parchemin2);color:#3b2410;font-family:'IM Fell English SC',serif;font-size:32px;
+  clip-path:polygon(0 0,100% 0,calc(100% - 20px) 50%,100% 100%,0 100%,20px 50%)}
+.corde{position:absolute;top:0;width:6px;border-radius:3px;background:repeating-linear-gradient(180deg,#c29a5a 0 7px,#7a5528 7px 14px)}
+.plaque{position:absolute;left:0;background:var(--bois);border:6px solid var(--laiton);border-radius:20px;
+  box-shadow:0 22px 44px rgba(0,0,0,.5),inset 0 0 0 3px var(--bois-fonce),inset 0 0 40px rgba(0,0,0,.45);
+  display:flex;flex-direction:column;align-items:center}
+.rivet{position:absolute;width:12px;height:12px;border-radius:50%;background:#e4b95a;box-shadow:0 2px 0 var(--bois-fonce)}
+.etiquette{font-family:'IM Fell English SC',serif;font-size:30px;letter-spacing:.06em;color:var(--sable-txt);display:flex;align-items:center;gap:10px;white-space:nowrap}
+#tresor{left:700px;top:0;width:520px;height:320px}
+#tresor .plaque{top:46px;width:520px;padding:20px 32px 24px;gap:2px}
+#t-montant{width:100%;text-align:center;font-family:'Pirata One',serif;font-size:124px;line-height:1;color:var(--or-clair);text-shadow:0 5px 0 var(--bois-fonce);white-space:nowrap;overflow:hidden}
+#t-objectif{font-size:24px;font-weight:600;color:var(--sable-txt);opacity:.8}
+#chrono{right:72px;top:0;width:440px;height:300px}
+#chrono .plaque{top:58px;width:440px;padding:20px 28px 22px;gap:4px}
+#c-valeur{font-size:88px;font-weight:800;line-height:1.05;color:#fff6e0;font-variant-numeric:tabular-nums;letter-spacing:.01em;text-shadow:0 5px 0 var(--bois-fonce)}
+#c-unites{font-size:20px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--sable-txt);opacity:.65}
+.carte{position:absolute;background:var(--parchemin2);color:#3b2410;border-radius:12px;
+  box-shadow:0 18px 36px rgba(0,0,0,.45),inset 0 0 36px rgba(150,95,35,.4);display:flex;align-items:center;gap:18px;padding:18px 26px}
+.carte .etiq{font-family:'IM Fell English SC',serif;font-size:24px;color:var(--encre-rouge)}
+.carte .nom{font-size:28px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#butin{right:72px;top:780px;width:480px;transform:rotate(1.5deg);transition:opacity .8s,transform .8s}
+#butin.cache{opacity:0;transform:rotate(1.5deg) translateY(30px)}
+#butin-montant{font-family:'Pirata One',serif;font-size:52px;line-height:1;color:#9a6a10;white-space:nowrap}
+#toast{left:72px;top:780px;width:440px;transform:rotate(-1.5deg) translateX(-620px);transition:transform .7s cubic-bezier(.3,1.3,.5,1)}
+#toast.on{transform:rotate(-1.5deg)}
+#bandeau{left:370px;top:958px;width:1180px;height:88px;border:4px solid var(--encre);border-radius:14px;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.09) 0 2px,rgba(0,0,0,0) 2px 10px),#5b3418;
+  box-shadow:0 14px 30px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,220,160,.18)}
+.clou{position:absolute;top:32px;width:14px;height:14px;border-radius:50%;background:var(--encre);box-shadow:inset 0 2px 0 #8a6a40}
+#b-contenu{position:absolute;inset:0 44px;display:flex;align-items:center;justify-content:center;gap:18px;transition:opacity .6s;white-space:nowrap}
+#b-contenu.cache{opacity:0}
+.b-txt{font-size:36px;font-weight:700;color:#f3e4bd}
+.b-cmd{font-size:34px;font-weight:800;color:var(--encre);background:var(--or);padding:4px 16px;border-radius:8px}
+
+/* ---------- message !ecran (parchemin roulé) ---------- */
+#bulle{left:510px;top:330px;width:900px;display:flex;flex-direction:column;align-items:center;
+  transform-origin:50% 0;transform:rotate(-1deg) scaleY(.08);opacity:0;transition:transform .8s cubic-bezier(.3,1.25,.5,1),opacity .4s}
+#bulle.on{transform:rotate(-1deg) scaleY(1);opacity:1}
+.rouleau{width:900px;height:44px;border-radius:22px;background:linear-gradient(180deg,#b07a42 0%,#6b4221 60%,#3e2410 100%);box-shadow:0 10px 20px rgba(0,0,0,.4)}
+#b-papier{position:relative;width:820px;padding:34px 64px 48px;background:var(--parchemin);color:var(--encre);text-align:center;
+  box-shadow:inset 0 0 50px rgba(150,95,35,.45),0 20px 40px rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;gap:12px}
+#b-nom{font-family:'IM Fell English SC',serif;font-size:36px;color:var(--encre-rouge);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#b-texte{font-size:58px;font-weight:800;line-height:1.15;overflow-wrap:anywhere}
+.sceau{position:absolute;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 38% 32%,#c43a26 0%,#9c2414 55%,#6e140a 100%);box-shadow:0 10px 22px rgba(0,0,0,.45)}
+#b-sceau{right:-40px;bottom:-44px;width:116px;height:116px;transform:rotate(-8deg)}
+
+/* ---------- alerte ---------- */
+#alerte{inset:0;opacity:0;transition:opacity .5s;pointer-events:none}
+#alerte.on{opacity:1}
+#a-voile{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,rgba(4,6,16,.3) 0%,rgba(4,6,16,.82) 78%)}
+#a-rayons{left:360px;top:-140px;width:1200px;height:1200px;animation:tourne 50s linear infinite;
+  background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,214,120,.16) 0deg 4deg,rgba(255,214,120,0) 4deg 12deg);
+  -webkit-mask-image:radial-gradient(circle,#000 12%,transparent 58%);mask-image:radial-gradient(circle,#000 12%,transparent 58%)}
+@keyframes tourne{to{transform:rotate(360deg)}}
+#a-carte{left:470px;top:190px;width:980px;padding:48px 72px 60px;background:var(--parchemin);color:var(--encre);border-radius:10px;
+  box-shadow:0 40px 90px rgba(0,0,0,.6),inset 0 0 70px rgba(150,95,35,.5);display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;
+  transform:translateY(-80px) rotate(-7deg) scale(.7);transition:transform .8s cubic-bezier(.3,1.5,.5,1)}
+#alerte.on #a-carte{transform:rotate(-1.5deg)}
+#a-type{font-family:'IM Fell English SC',serif;font-size:42px;letter-spacing:.08em;color:var(--encre-rouge)}
+.filet{display:flex;align-items:center;gap:16px;width:100%}
+.filet i{flex-grow:1;height:2px;background:var(--encre-rouge);opacity:.45}
+#a-nom{width:100%;font-family:'Pirata One',serif;font-size:160px;line-height:1.02;text-shadow:0 4px 0 rgba(150,95,35,.35);white-space:nowrap;overflow:hidden}
+#a-msg{font-family:'IM Fell English',serif;font-style:italic;font-size:42px;color:#4a2e16;overflow-wrap:anywhere}
+#a-msg:empty{display:none}
+#a-sceau{right:-70px;bottom:-90px;width:240px;height:240px;transform:rotate(9deg)}
+#a-sceau::before{content:'';position:absolute;left:16px;top:16px;width:208px;height:208px;border-radius:50%;border:3px dashed rgba(255,220,200,.4)}
+#a-sceau-val{font-family:'Pirata One',serif;font-size:96px;line-height:.95;color:#fbe9d6;white-space:nowrap}
+#a-sceau-sous{font-family:'IM Fell English SC',serif;font-size:26px;color:#f6d4c2}
+
+/* ---------- effets ---------- */
+#emotes,#effets{position:absolute;inset:0;pointer-events:none}
+.emote{position:absolute;top:0;object-fit:contain;will-change:transform}
+.piece{position:absolute;margin:-30px 0 0 -30px;width:60px;height:60px;border-radius:50%;will-change:transform;
+  background:radial-gradient(circle at 35% 30%,#fff4b8 0%,#f5c84c 45%,#b8841a 100%);box-shadow:inset 0 0 0 5px rgba(140,90,10,.55),0 6px 14px rgba(0,0,0,.35)}
+body.panique #bulle,body.panique #emotes{display:none}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ======= DÉCOR ======= -->
+  <div id="etoiles" class="abs" style="left:0;top:0;width:1920px;height:640px"></div>
+  <div class="nuage" style="left:100px;top:80px;width:420px;height:80px;--t:70s;--dx:80px"></div>
+  <div class="nuage" style="left:1060px;top:200px;width:580px;height:100px;--t:90s;--dx:-120px"></div>
+  <div class="nuage" style="left:1480px;top:60px;width:340px;height:64px;--t:60s;--dx:-60px"></div>
+  <div id="halo" class="abs"></div>
+  <div id="lune" class="abs">
+    <div class="cratere" style="left:44px;top:70px;width:26px;height:22px"></div>
+    <div class="cratere" style="left:96px;top:40px;width:18px;height:16px"></div>
+    <div class="cratere" style="left:100px;top:110px;width:34px;height:26px"></div>
+  </div>
+  <svg class="vague abs" data-top="640" data-h="440" data-base="12" data-amp="8" data-per="90" data-fond="--mer0" data-duree="60000"></svg>
+  <div id="bateau-route" class="abs">
+    <svg id="bateau" width="150" height="112" viewBox="0 0 160 120" style="opacity:.85">
+      <path d="M58 14 V92 M102 26 V92" stroke="#0b1020" stroke-width="4"/>
+      <path d="M60 20 Q86 34 60 50 Z M60 54 Q92 68 60 86 Z M104 32 Q126 44 104 58 Z M104 62 Q130 74 104 88 Z" fill="#b9b3a1" opacity=".55"/>
+      <path d="M58 14 L74 9 L58 4 Z" fill="#0b1020"/>
+      <path d="M8 92 H152 L138 114 H26 Z" fill="#0b1020"/>
+      <path d="M140 92 L156 78" stroke="#0b1020" stroke-width="3"/>
+    </svg>
+  </div>
+  <svg class="vague abs" data-top="700" data-h="380" data-base="20" data-amp="14" data-per="170" data-fond="--mer1" data-ecume=".35" data-duree="34000"></svg>
+  <div id="reflets"></div>
+  <div id="rayons" class="abs"></div>
+  <div id="lueur" class="abs"></div>
+  <svg class="abs" width="980" height="230" viewBox="0 0 980 230" style="left:470px;top:790px">
+    <path d="M20 172 Q490 38 960 172 Q490 232 20 172 Z" fill="#8f6a3c"/>
+    <path d="M60 160 Q490 30 920 160 Q490 204 60 160 Z" fill="#d9b574"/>
+    <path d="M200 128 Q490 58 780 128 Q490 110 200 128 Z" fill="#ecd29a" opacity=".55"/>
+    <path d="M20 172 Q490 232 960 172" fill="none" style="stroke:var(--ecume)" stroke-width="4" stroke-opacity=".5"/>
+    <ellipse cx="490" cy="118" rx="210" ry="12" fill="#000" opacity=".28"/>
+    <path d="M206 130 l6 -22 l4 20 l8 -26 l3 26 l9 -18 l-2 20 Z" fill="#2f6b3a"/>
+    <path d="M760 132 l5 -18 l4 16 l7 -22 l3 22 l8 -14 l-2 16 Z" fill="#2f6b3a"/>
+    <ellipse cx="846" cy="156" rx="30" ry="14" fill="#4f4c57"/>
+    <ellipse cx="876" cy="163" rx="18" ry="9" fill="#625e6b"/>
+    <g fill="#f5c84c" stroke="#a8761a" stroke-width="2">
+      <ellipse cx="250" cy="140" rx="11" ry="5"/><ellipse cx="276" cy="152" rx="11" ry="5"/><ellipse cx="304" cy="143" rx="11" ry="5"/>
+      <ellipse cx="322" cy="158" rx="11" ry="5"/><ellipse cx="690" cy="156" rx="11" ry="5"/><ellipse cx="704" cy="140" rx="11" ry="5"/>
+      <ellipse cx="730" cy="151" rx="11" ry="5"/>
+    </g>
+    <path d="M742 142 l8 -9 l8 9 l-8 9 Z" fill="#d6405a"/>
+  </svg>
+  <svg id="palmier" class="abs" width="260" height="380" viewBox="0 0 260 380">
+    <path d="M150 380 Q104 250 146 86" fill="none" stroke="#6b4521" stroke-width="20" stroke-linecap="round"/>
+    <path d="M128 330 q12 -6 24 0 M119 285 q12 -6 24 0 M116 240 q12 -6 24 0 M120 195 q12 -6 24 0 M128 150 q12 -6 24 0 M138 112 q10 -5 20 0" fill="none" stroke="#4a2e14" stroke-width="3" stroke-linecap="round"/>
+    <path d="M146 86 Q70 90 34 150 Q84 108 144 98 Z" fill="#185a31"/>
+    <path d="M146 86 Q220 96 244 150 Q200 110 150 98 Z" fill="#185a31"/>
+    <path d="M146 86 Q90 40 18 78 Q84 64 146 96 Z" fill="#1f6b3a"/>
+    <path d="M146 86 Q200 30 252 70 Q196 62 146 98 Z" fill="#1f6b3a"/>
+    <path d="M146 86 Q120 20 62 10 Q112 40 142 96 Z" fill="#2a8047"/>
+    <path d="M146 86 Q176 14 236 20 Q184 40 150 96 Z" fill="#2a8047"/>
+    <circle cx="138" cy="100" r="9" fill="#4a2e14"/><circle cx="156" cy="103" r="9" fill="#3d2610"/><circle cx="147" cy="112" r="8" fill="#4a2e14"/>
+  </svg>
+  <svg class="abs" width="200" height="280" viewBox="0 0 200 280" style="left:1230px;top:644px">
+    <path d="M22 24 V280" stroke="#3b2614" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="22" cy="20" r="7" fill="#e6b546"/>
+    <g id="tissu">
+      <path d="M25 30 Q70 18 112 32 Q150 44 192 34 L186 126 Q146 136 108 122 Q68 108 25 118 Z" fill="#141118"/>
+      <path d="M64 112 L148 52 M64 52 L148 112" stroke="#ece5d3" stroke-width="9" stroke-linecap="round"/>
+      <g fill="#ece5d3">
+        <circle cx="58" cy="110" r="6"/><circle cx="66" cy="118" r="6"/><circle cx="146" cy="46" r="6"/><circle cx="154" cy="54" r="6"/>
+        <circle cx="58" cy="54" r="6"/><circle cx="66" cy="46" r="6"/><circle cx="146" cy="118" r="6"/><circle cx="154" cy="110" r="6"/>
+      </g>
+      <g fill="#ece5d3" stroke="#141118" stroke-width="4">
+        <ellipse cx="106" cy="92" rx="23" ry="19"/><ellipse cx="80" cy="64" rx="9" ry="11"/><ellipse cx="98" cy="54" rx="9" ry="11"/>
+        <ellipse cx="116" cy="54" rx="9" ry="11"/><ellipse cx="133" cy="64" rx="9" ry="11"/>
+      </g>
+    </g>
+  </svg>
+  <svg id="coffre" class="abs" width="440" height="345" viewBox="0 0 440 345">
+    <defs><clipPath id="clipOr"><rect x="40" y="-100" width="360" height="262"/></clipPath></defs>
+    <path d="M60 152 L78 40 Q220 -2 362 40 L380 152 Z" fill="#4a2912"/>
+    <path d="M86 144 L100 58 Q220 26 340 58 L354 144 Z" fill="#1f1008"/>
+    <path d="M130 24 L118 150 M310 24 L322 150" stroke="#c8952f" stroke-width="16"/>
+    <path d="M78 40 Q220 -2 362 40" fill="none" stroke="#c8952f" stroke-width="12" stroke-linecap="round"/>
+    <g clip-path="url(#clipOr)"><g id="or" style="transform:translateY(80px)">
+      <path d="M48 176 C100 22 340 22 392 176 V345 H48 Z" fill="#f2c14e"/>
+      <path d="M70 170 C120 60 320 60 370 170" fill="none" stroke="#ffe08a" stroke-width="6" opacity=".7"/>
+      <path d="M48 176 C100 22 340 22 392 176" fill="none" stroke="#b8841a" stroke-width="3"/>
+      <g fill="#ffd66b" stroke="#a8761a" stroke-width="2.5">
+        <ellipse cx="150" cy="80" rx="16" ry="7"/><ellipse cx="222" cy="58" rx="16" ry="7"/><ellipse cx="292" cy="82" rx="16" ry="7"/>
+        <ellipse cx="186" cy="106" rx="16" ry="7"/><ellipse cx="258" cy="112" rx="16" ry="7"/><ellipse cx="116" cy="130" rx="16" ry="7"/>
+        <ellipse cx="324" cy="132" rx="16" ry="7"/><ellipse cx="222" cy="140" rx="16" ry="7"/>
+      </g>
+      <path d="M200 90 l10 -12 l10 12 l-10 12 Z" fill="#d6405a" stroke="#7a1426" stroke-width="2"/>
+      <path d="M268 62 l8 -10 l8 10 l-8 10 Z" fill="#3fb57a" stroke="#155c38" stroke-width="2"/>
+      <path d="M136 106 l9 -11 l9 11 l-9 11 Z" fill="#4a8fe0" stroke="#1d4a85" stroke-width="2"/>
+      <path class="eclat" d="M226 28 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 l12 -4 Z" fill="#fffbe8"/>
+      <path class="eclat" style="animation-delay:1.1s" d="M160 60 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#fffbe8"/>
+      <path class="eclat" style="animation-delay:2.2s" d="M304 56 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#fffbe8"/>
+    </g></g>
+    <rect x="44" y="152" width="352" height="180" rx="10" fill="#7a4520"/>
+    <path d="M44 212 H396 M44 272 H396" stroke="#4f2b12" stroke-width="4"/>
+    <path d="M60 184 q40 -6 80 0 t80 0 M150 244 q40 6 80 0 t70 0 M70 304 q50 -5 100 0 t90 0" fill="none" stroke="#5e3416" stroke-width="2" opacity=".6"/>
+    <rect x="36" y="140" width="368" height="24" rx="6" fill="#c8952f"/>
+    <path d="M40 162 H400" stroke="#8a6116" stroke-width="3"/>
+    <rect x="100" y="152" width="26" height="180" fill="#c8952f"/>
+    <rect x="314" y="152" width="26" height="180" fill="#c8952f"/>
+    <path d="M124 164 V332 M338 164 V332" stroke="#8a6116" stroke-width="3"/>
+    <g fill="#f0cf73">
+      <circle cx="113" cy="190" r="4"/><circle cx="113" cy="246" r="4"/><circle cx="113" cy="306" r="4"/>
+      <circle cx="327" cy="190" r="4"/><circle cx="327" cy="246" r="4"/><circle cx="327" cy="306" r="4"/>
+      <circle cx="58" cy="152" r="4"/><circle cx="382" cy="152" r="4"/>
+    </g>
+    <path d="M44 290 V332 H86 V318 H58 V290 Z" fill="#2f2b2b"/>
+    <path d="M396 290 V332 H354 V318 H382 V290 Z" fill="#2f2b2b"/>
+    <path d="M194 172 H246 V214 Q246 238 220 250 Q194 238 194 214 Z" fill="#e6b546" stroke="#8a5c10" stroke-width="3"/>
+    <circle cx="220" cy="198" r="7" fill="#2a170a"/>
+    <path d="M216 202 H224 L222 224 H218 Z" fill="#2a170a"/>
+  </svg>
+  <svg class="vague abs" data-top="960" data-h="120" data-base="20" data-amp="16" data-per="210" data-fond="--mer2" data-ecume=".4" data-duree="22000"></svg>
+  <svg class="vague abs" data-top="1016" data-h="64" data-base="16" data-amp="12" data-per="250" data-fond="--mer3" data-ecume=".3" data-duree="16000" data-inverse="1"></svg>
+
+  <div id="emotes"></div>
+
+  <!-- ======= INTERFACE ======= -->
+  <div id="titre" class="abs">
+    <h1 id="t-titre"></h1>
+    <div id="t-sous"></div>
+  </div>
+
+  <div id="tresor" class="abs">
+    <div class="corde" style="left:96px;height:52px"></div><div class="corde" style="right:96px;height:52px"></div>
+    <div class="plaque">
+      <div class="rivet" style="left:12px;top:12px"></div><div class="rivet" style="right:12px;top:12px"></div>
+      <div class="rivet" style="left:12px;bottom:12px"></div><div class="rivet" style="right:12px;bottom:12px"></div>
+      <div class="etiquette">Trésor de l'équipage</div>
+      <div id="t-montant">0 €</div>
+      <div id="t-objectif"></div>
+    </div>
+  </div>
+
+  <div id="chrono" class="abs">
+    <div class="corde" style="left:80px;height:64px"></div><div class="corde" style="right:80px;height:64px"></div>
+    <div class="plaque">
+      <div class="etiquette">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e8cf94" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9s8 4 8 9"/></svg>
+        <span id="c-label"></span>
+      </div>
+      <div id="c-valeur">--:--</div>
+      <div id="c-unites">heures · min · sec</div>
+    </div>
+  </div>
+
+  <div id="butin" class="carte cache">
+    <svg width="56" height="56" viewBox="0 0 56 56" style="flex-shrink:0"><circle cx="28" cy="28" r="25" fill="#f2c14e" stroke="#9a6a10" stroke-width="4"/><circle cx="28" cy="28" r="16" fill="none" stroke="#b8841a" stroke-width="3"/><path d="M28 18 V38 M22 22 H32 Q36 22 36 26 Q36 30 28 30" fill="none" stroke="#7a520c" stroke-width="3" stroke-linecap="round"/></svg>
+    <div style="display:flex;flex-direction:column;flex-grow:1;min-width:0">
+      <div class="etiq">Dernier butin</div>
+      <div class="nom" id="butin-nom"></div>
+    </div>
+    <div id="butin-montant"></div>
+  </div>
+
+  <div id="toast" class="carte">
+    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#8e2a12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21M8 11h8M5 13a7 7 0 0 0 14 0"/></svg>
+    <div style="display:flex;flex-direction:column;min-width:0">
+      <div class="etiq">Nouveau matelot</div>
+      <div class="nom" id="toast-nom"></div>
+    </div>
+  </div>
+
+  <div id="bandeau" class="abs">
+    <div class="clou" style="left:18px"></div><div class="clou" style="right:18px"></div>
+    <div id="b-contenu"></div>
+  </div>
+
+  <!-- ======= MESSAGE !ecran ======= -->
+  <div id="bulle" class="abs">
+    <div class="rouleau"></div>
+    <div id="b-papier">
+      <div id="b-nom"></div>
+      <div id="b-texte"></div>
+      <div id="b-sceau" class="sceau">
+        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#f6d9c8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21M8 11h8M5 13a7 7 0 0 0 14 0"/></svg>
+      </div>
+    </div>
+    <div class="rouleau"></div>
+  </div>
+
+  <!-- ======= ALERTE ======= -->
+  <div id="alerte" class="abs">
+    <div id="a-voile"></div>
+    <div id="a-rayons" class="abs"></div>
+    <div id="a-carte" class="abs">
+      <div id="a-type"></div>
+      <div class="filet"><i></i>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8e2a12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21M8 11h8M5 13a7 7 0 0 0 14 0"/></svg>
+      <i></i></div>
+      <div id="a-nom"></div>
+      <div id="a-msg"></div>
+      <div id="a-sceau" class="sceau"><div id="a-sceau-val"></div><div id="a-sceau-sous"></div></div>
+    </div>
+  </div>
+
+  <div id="effets"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tmi.js@1.8.5/dist/tmi.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script>
+/* =====================================================================
+   CONFIG — tout se règle ici ou via l'URL (?chaine=...&token=...)
+   ===================================================================== */
+const P = new URLSearchParams(location.search);
+const CONFIG = {
+  chaine: P.get('chaine') || 'burri_tv',
+  streamlabsToken: P.get('token') || '',        // Socket API token Streamlabs (jamais dans le fichier ni sur GitHub)
+  titre: P.get('titre') || 'Burri',
+  sousTitre: P.get('sous') || 'Gamers4Pets 2026',
+  objectif: parseFloat(P.get('objectif') || 100000),
+  total: P.has('total') ? parseFloat(P.get('total')) : null, // sinon reprend le dernier total connu
+  debut: P.get('debut') || '',                  // ex. 2026-10-10T18:00 → active le compte à rebours
+  dureeH: parseFloat(P.get('duree') || 24),
+  afficherMsgDons: P.get('msgdons') !== '0',
+  ambiance: P.get('couleur') || 'bleu',
+
+  // !ecran : qui peut l'utiliser → tous | subs | vip | mods | off
+  ecranAcces: P.get('ecran') || 'tous',
+  ecranCooldownUser: 60,     // secondes entre deux !ecran d'une même personne
+  ecranDelai: 3,             // secondes d'attente avant affichage (le temps qu'un modo supprime)
+  ecranDuree: 8,             // secondes à l'écran
+  ecranMaxCaracteres: 80,
+  motsInterdits: [],         // TES mots en plus de la liste de base (BASE_INTERDITS) ; 'mot*' = tout ce qui commence par « mot »
+
+  // --- anti-abus ---
+  ecranValidation: P.get('validation') === '1', // chaque !ecran attend un !ok d'un modo
+  ecranMessagesMin: 3,       // messages déjà envoyés dans le chat avant d'avoir droit à !ecran
+  emotesParUserMax: 12,      // emotes max par personne toutes les 10 s
+
+  maxEmotes: 45,             // plafond d'emotes à l'écran (la box n'est pas un PC de guerre)
+  emotesParMessage: 6,
+  couleurCooldown: 15,
+
+  // Bandeau du bas : texte, commande (pastille dorée), suite
+  messages: [
+    { icone:'ancre', avant:'Tape', cmd:'!ecran ton message', apres:"et il s'affiche derrière moi" },
+    { icone:'piece', avant:'Chaque don remplit le coffre', cmd:'', apres:'' },
+    { icone:'patte', avant:'Change la mer :', cmd:'!couleur bleu · vert · violet', apres:'' },
+    { icone:'patte', avant:'Tous les dons vont à la cause animale', cmd:'', apres:'' },
+    { icone:'ancre', avant:'Spamme des emotes,', cmd:'', apres:'elles tombent dans la mer' },
+  ],
+  demo: P.has('demo') || window.self !== window.top,
+};
+
+const PALETTES = { // ciel ×3, mer ×4, écume
+  bleu:   [['#050918','#14254a','#2d4b78'], ['#1f5189','#163f6e','#0d2c51','#081c36'], '#9fcdee'],
+  vert:   [['#03100c','#0e3128','#1d5a47'], ['#1d6e5a','#145647','#0c3c31','#072721'], '#9ae6cb'],
+  violet: [['#0b0618','#261547','#472f7c'], ['#4b3393','#392574','#271754','#180e38'], '#cdbcf6'],
+  rouge:  [['#12040a','#3d1020','#6e2233'], ['#7a2432','#5e1a27','#42111b','#290a11'], '#f2b3bd'],
+  or:     [['#120c04','#3d2a0e','#7a5a22'], ['#7a5d24','#5e471b','#433212','#2a1f0b'], '#f2d9a0'],
+  rose:   [['#14061a','#43174a','#8a3a78'], ['#9a3f82','#7a3068','#55204a','#35122e'], '#f7c3e6'],
+};
+
+const ICONES = {
+  ancre: '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#f4c65a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21M8 11h8M5 13a7 7 0 0 0 14 0"/></svg>',
+  patte: '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#f4c65a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 22a5 5 0 0 1-5-5c0-2.5 2-4 5-4s5 1.5 5 4a5 5 0 0 1-5 5z"/></svg>',
+  piece: '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#f4c65a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/></svg>',
+};
+
+/* Liste de base du filtre (normalisée : sans accents, leet → lettres, lettres doublées fusionnées).
+   'mot'  = mot exact ; 'mot*' = tout mot qui commence par ça ; 'deux mots' = expression.        */
+const BASE_INTERDITS = [
+  'connard*','connass*','salop*','salaud*','pute','putes','putain*','encul*','batard*','nique','niquer','niques','niquez','ntm','fdp','tg','pd','pede','pedes',
+  'tapette*','gouine*','negr*','bougnoul*','youpin*','bicot*','bamboula*','chintok*','mongol','mongols','gogol*','triso*',
+  'attarde','attardes','retard','retards','nazi*','hitler*','viol','violer','pedo','pedos','pedophil*',
+  'bite','bites','couill*','chatte','teub*','sexe','porn','porno*','nude*','fuck*','shit','bitch*','cunt*',
+  'niger','nigers','niga','nigas','faggot','fag','fags','whore*','slut*','rape','kys','suicid*',
+  'ta gueule','ta mere','nique ta mere','kill yourself','sieg heil','heil hitler','va mourir','va crever','creve',
+];
+// Cherchés même collés ou espacés (« c.o.n.n.a.r.d ») : seulement des mots sans faux positifs courants
+const BASE_COLLES = ['connard','connasse','salope','encule','bougnoule','youpin','pedophil','fuck','whore','bitch','hitler'];
+
+/* ---------- utilitaires ---------- */
+const $ = s => document.querySelector(s);
+const stage = $('#stage');
+const rnd = (a, b) => a + Math.random() * (b - a);
+const euros = n => new Intl.NumberFormat('fr-FR', { style:'currency', currency:'EUR', minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n);
+const stock = {
+  get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k, v){ try { localStorage.setItem(k, v); } catch(e){} },
+};
+// réduit la police jusqu'à ce que le texte tienne dans sa boîte
+function ajusterTaille(el, max, min){
+  let s = max; el.style.fontSize = s + 'px';
+  while (el.scrollWidth > el.clientWidth + 1 && s > min){ s -= 4; el.style.fontSize = s + 'px'; }
+}
+function ajusterEcran(){
+  const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = `translate(-50%, -50%) scale(${k})`;
+}
+addEventListener('resize', ajusterEcran);
+
+/* ---------- décor ---------- */
+function construireDecor(){
+  const et = $('#etoiles');
+  for (let i = 0; i < 80; i++){
+    const x = rnd(0, 1920), y = rnd(0, 600), t = rnd(1, 3.6);
+    if (x > 230 && x < 540 && y > 90 && y < 390) continue;           // pas d'étoiles sur la lune
+    const s = document.createElement('div'); s.className = 'etoile';
+    Object.assign(s.style, { left: x + 'px', top: y + 'px', width: t + 'px', height: t + 'px', opacity: rnd(.3, 1) });
+    s.style.setProperty('--d', rnd(2, 6) + 's'); s.style.setProperty('--dl', rnd(0, 5) + 's');
+    et.appendChild(s);
+  }
+  const rf = $('#reflets');
+  for (let i = 0; i < 9; i++){
+    const w = rnd(40, 150), d = document.createElement('div'); d.className = 'reflet';
+    Object.assign(d.style, { left: (385 - w / 2 + rnd(-15, 15)) + 'px', top: (664 + i * 24) + 'px', width: w + 'px', opacity: (.55 - i * .05) });
+    d.style.setProperty('--d', rnd(1.5, 3.5) + 's');
+    rf.appendChild(d);
+  }
+  // vagues : un motif périodique qu'on fait glisser d'une période, en boucle
+  document.querySelectorAll('svg.vague').forEach(v => {
+    const D = v.dataset, per = +D.per, base = +D.base, amp = +D.amp, H = +D.h, W = 1920 + per * 2;
+    let d = `M0 ${base}`;
+    for (let x = 0; x < W; x += per) d += ` Q${x + per / 2} ${base - amp} ${x + per} ${base}`;
+    v.setAttribute('width', W); v.setAttribute('height', H); v.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    v.style.left = (-per) + 'px'; v.style.top = D.top + 'px';
+    v.innerHTML = `<path class="fond" d="${d} V${H} H0 Z" style="fill:var(${D.fond})"/>` +
+      (D.ecume ? `<path d="${d}" fill="none" style="stroke:var(--ecume)" stroke-width="3" stroke-opacity="${D.ecume}"/>` : '');
+    const sens = D.inverse ? -1 : 1;
+    v.animate([{ transform:'translateX(0)' }, { transform:`translateX(${sens * per}px)` }], { duration: +D.duree, iterations: Infinity });
+  });
+}
+function appliquerPalette(nom){
+  const p = PALETTES[nom]; if (!p) return false;
+  const r = document.documentElement.style;
+  p[0].forEach((c, i) => r.setProperty('--ciel' + i, c));
+  p[1].forEach((c, i) => r.setProperty('--mer' + i, c));
+  r.setProperty('--ecume', p[2]);
+  return true;
+}
+
+/* ---------- trésor & dernier butin ---------- */
+let total = CONFIG.total ?? parseFloat(stock.get('ecranPirate.total') || 0);
+function majTresor(){
+  stock.set('ecranPirate.total', total);
+  const el = $('#t-montant'); el.textContent = euros(total); ajusterTaille(el, 124, 60);
+  // échelle log + un fond d'or : le coffre bouge même loin d'un gros objectif
+  const r = Math.max(0, Math.min(1, Math.log10(1 + total) / Math.log10(1 + CONFIG.objectif)));
+  $('#or').style.transform = `translateY(${Math.round((1 - (.3 + .7 * r)) * 120)}px)`;
+}
+function majButin(b){
+  if (!b) return;
+  stock.set('ecranPirate.butin', JSON.stringify(b));
+  $('#butin-nom').textContent = b.nom;
+  $('#butin-montant').textContent = euros(b.montant);
+  $('#butin').classList.remove('cache');
+}
+
+/* ---------- chrono ---------- */
+function majChrono(){
+  const pad = n => String(n).padStart(2, '0');
+  const hms = ms => { const s = Math.floor(ms / 1000); return `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`; };
+  const now = new Date(), U = $('#c-unites');
+  if (!CONFIG.debut){
+    $('#c-label').textContent = 'Heure à bord';
+    $('#c-valeur').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    U.style.visibility = 'hidden';
+    return;
+  }
+  U.style.visibility = 'visible';
+  const debut = new Date(CONFIG.debut), fin = debut.getTime() + CONFIG.dureeH * 3600e3;
+  if (now < debut){ $('#c-label').textContent = 'Départ dans'; $('#c-valeur').textContent = hms(debut - now); }
+  else if (now < fin){ $('#c-label').textContent = `Fin du ${CONFIG.dureeH}h dans`; $('#c-valeur').textContent = hms(fin - now); }
+  else { $('#c-label').textContent = `${CONFIG.dureeH}h terminé`; $('#c-valeur').textContent = 'Terre !'; U.style.visibility = 'hidden'; }
+}
+
+/* ---------- bandeau ---------- */
+let iMsg = 0;
+function bandeauSuivant(){
+  const c = $('#b-contenu');
+  c.classList.add('cache');
+  setTimeout(() => {
+    const m = CONFIG.messages[iMsg++ % CONFIG.messages.length];
+    c.innerHTML = '';
+    c.insertAdjacentHTML('beforeend', ICONES[m.icone] || '');
+    const bout = (cls, txt) => { if (!txt) return; const s = document.createElement('div'); s.className = cls; s.textContent = txt; c.appendChild(s); };
+    bout('b-txt', m.avant); bout('b-cmd', m.cmd); bout('b-txt', m.apres);
+    c.classList.remove('cache');
+  }, 600);
+}
+
+/* ---------- pluie d'emotes ---------- */
+let nbEmotes = 0;
+function pluieEmote(id){
+  if (nbEmotes >= CONFIG.maxEmotes || moderation.panique) return;
+  nbEmotes++;
+  const img = new Image(); img.className = 'emote';
+  img.src = `https://static-cdn.jtvnw.net/emoticons/v2/${encodeURIComponent(id)}/default/dark/3.0`;
+  const t = rnd(72, 128);
+  img.style.width = img.style.height = t + 'px';
+  img.style.left = rnd(30, 1820) + 'px';
+  $('#emotes').appendChild(img);
+  const fin = rnd(700, 990), sway = rnd(-110, 110);
+  const anim = img.animate([
+    { transform:`translate(0, -140px) rotate(${-sway / 6}deg)`, opacity:0 },
+    { opacity:1, offset:.08 },
+    { transform:`translate(${sway}px, ${fin * .9}px) rotate(${sway / 6}deg)`, opacity:1, offset:.85 },
+    { transform:`translate(${sway * 1.1}px, ${fin}px) scale(.3)`, opacity:0 },
+  ], { duration: rnd(4500, 7500) });
+  const nettoie = () => { img.remove(); nbEmotes--; };
+  anim.onfinish = nettoie;
+  img.onerror = () => { anim.onfinish = null; anim.cancel(); nettoie(); };
+}
+
+/* ---------- explosion de pièces (depuis le coffre) ---------- */
+function explosionPieces(n){
+  const x0 = 960, y0 = 690;
+  for (let i = 0; i < n; i++){
+    const c = document.createElement('div'); c.className = 'piece';
+    const k = rnd(.55, 1.25);
+    c.style.left = x0 + 'px'; c.style.top = y0 + 'px';
+    $('#effets').appendChild(c);
+    const dx = rnd(-880, 880), haut = rnd(300, 680);
+    c.animate([
+      { transform:`translate(0,0) scale(${k * .4})`, easing:'cubic-bezier(.2,.8,.4,1)' },
+      { transform:`translate(${dx * .55}px, ${-haut}px) scale(${k}) rotateY(${rnd(180, 720)}deg)`, offset:.45, easing:'cubic-bezier(.5,0,.8,.4)' },
+      { transform:`translate(${dx}px, ${rnd(60, 340)}px) scale(${k * .9}) rotateY(${rnd(720, 1440)}deg)`, opacity:0 },
+    ], { duration: rnd(1800, 2800), delay: rnd(0, 600), fill:'both' }).onfinish = () => c.remove();
+  }
+}
+
+/* ---------- grosses alertes (dons, subs, bits) ---------- */
+const fileAlertes = []; let alerteEnCours = false;
+function alerte(a){
+  a.nom = nomSur(a.nom);
+  a.message = a.message ? (verifierTexte(a.message, 140) || '') : '';
+  fileAlertes.push(a);
+  if (!alerteEnCours) alerteSuivante();
+}
+function alerteSuivante(){
+  const a = fileAlertes.shift();
+  if (!a){ alerteEnCours = false; return; }
+  alerteEnCours = true;
+  const T = {
+    don:  ['Un don tombe dans le coffre', euros(a.montant || 0), 'de butin'],
+    sub:  ['Un nouveau matelot à bord', a.mois > 1 ? `${a.mois} mois` : 'Bienvenue', a.mois > 1 ? 'à bord' : 'matelot'],
+    bits: ['Des bits pour le trésor', String(a.montant || ''), 'bits'],
+  }[a.type] || ['', '', ''];
+  $('#a-type').textContent = T[0];
+  $('#a-sceau-val').textContent = T[1];
+  $('#a-sceau-sous').textContent = T[2];
+  $('#a-sceau-val').style.fontSize = T[1].length > 6 ? '62px' : T[1].length > 4 ? '78px' : '96px';
+  $('#a-msg').textContent = (CONFIG.afficherMsgDons && a.message && !moderation.panique) ? `« ${a.message} »` : '';
+  const nom = $('#a-nom'); nom.textContent = a.nom;
+  $('#alerte').classList.add('on');
+  ajusterTaille(nom, 160, 64);
+  if (a.type === 'don' && !a.test){
+    total += a.montant || 0;
+    setTimeout(majTresor, 700);
+    majButin({ nom: a.nom, montant: a.montant || 0 });
+  }
+  explosionPieces(a.type === 'don' ? Math.min(90, 25 + Math.round((a.montant || 0) * 2)) : 30);
+  stage.classList.remove('fete'); void stage.offsetWidth; stage.classList.add('fete');
+  setTimeout(() => {
+    $('#alerte').classList.remove('on');
+    setTimeout(() => { stage.classList.remove('fete'); alerteSuivante(); }, 900);
+  }, 7000);
+}
+
+let toastTimer;
+function toast(nom){
+  $('#toast-nom').textContent = nom;
+  const t = $('#toast'); t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 5000);
+}
+
+/* ---------- filtre anti-abus ---------- */
+const LEET = { '0':'o', '1':'i', '3':'e', '4':'a', '5':'s', '7':'t', '8':'b', '@':'a', '$':'s', '€':'e', '|':'i' };
+const replie = t => t.replace(/(.)\1+/g, '$1');                        // « connnnard » → « conard »
+const normaliser = t => replie(t.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[0134578@$€|]/g, c => LEET[c]));
+const LISTE = (() => {
+  const exacts = new Set(), prefixes = [], phrases = [];
+  for (const brut of [...BASE_INTERDITS, ...CONFIG.motsInterdits]){
+    const etoile = brut.trim().endsWith('*');
+    const m = normaliser(brut.trim().replace(/\*$/, ''));
+    if (!m) continue;
+    if (m.includes(' ')) phrases.push(m); else if (etoile) prefixes.push(m); else exacts.add(m);
+  }
+  return { exacts, prefixes, phrases, colles: BASE_COLLES.map(normaliser) };
+})();
+function contientInterdit(t){
+  const tokens = normaliser(t).split(/[^a-z]+/).filter(Boolean);
+  const fusion = []; let run = '';                                     // « p u t e » → « pute »
+  for (const k of tokens){ if (k.length === 1) run += k; else { if (run) fusion.push(replie(run)); run = ''; fusion.push(k); } }
+  if (run) fusion.push(replie(run));
+  const mauvais = k => LISTE.exacts.has(k) || LISTE.prefixes.some(p => k.startsWith(p));
+  if (tokens.some(mauvais) || fusion.some(mauvais)) return true;
+  const phrase = ' ' + tokens.join(' ') + ' ';
+  if (LISTE.phrases.some(p => phrase.includes(' ' + p + ' '))) return true;
+  const colle = replie(tokens.join(''));
+  return LISTE.colles.some(m => colle.includes(m));
+}
+// Renvoie le texte nettoyé, ou null s'il doit être refusé
+function verifierTexte(brut, max){
+  let t = String(brut || '').normalize('NFC')
+    .replace(/[​-‏‪-‮⁠-⁤﻿]/g, '')   // caractères invisibles
+    .replace(/\p{M}/gu, '')                                            // texte « zalgo » (les accents français restent, ils sont précomposés)
+    .replace(/\s+/g, ' ').trim();
+  if (t.length < 2) return null;
+  if (/[─-◿⠀-⣿]/.test(t)) return null;              // dessins en ASCII / braille
+  if (/(https?:|www\.|\b[\w-]+\s*(\.|\(dot\)|\[dot\]|\sdot\s|\spoint\s)\s*(com|fr|net|org|gg|tv|io|ly|be|xyz|me|co)\b)/i.test(t)) return null;
+  if (/@\w/.test(t)) return null;                                       // @mentions et mails
+  if (/\d[\d .\-]{6,}\d/.test(t)) return null;                          // numéros de téléphone, etc.
+  if ((t.match(/\p{Extended_Pictographic}/gu) || []).length > 5) return null;
+  if (contientInterdit(t)) return null;
+  t = t.replace(/(.)\1{3,}/gu, '$1$1$1');                               // « aaaaaaah » → « aaah »
+  const lettres = t.replace(/[^\p{L}]/gu, '');
+  if (lettres.length > 8 && lettres.replace(/[^\p{Lu}]/gu, '').length / lettres.length > 0.7)
+    t = t.charAt(0) + t.slice(1).toLowerCase();                          // PLUS DE CRIS
+  return max ? t.slice(0, max) : t;
+}
+const nomSur = n => (n && verifierTexte(n, 25)) || 'Un matelot';
+
+/* ---------- modération ---------- */
+const moderation = {
+  actif: CONFIG.ecranAcces !== 'off',
+  validation: CONFIG.ecranValidation,
+  panique: false,
+  bannis: new Set((() => { try { return JSON.parse(stock.get('ecranPirate.bannis') || '[]'); } catch(e){ return []; } })()),
+  avertis: {},      // nb de messages refusés par personne
+  punis: new Map(), // pseudo → fin du blocage auto
+  compteur: {},     // messages envoyés pendant la session
+  attente: [],      // messages en attente de !ok
+};
+const sauverBannis = () => stock.set('ecranPirate.bannis', JSON.stringify([...moderation.bannis]));
+setInterval(() => { const lim = Date.now() - 120e3; moderation.attente = moderation.attente.filter(m => m.recu > lim); }, 15e3);
+
+/* ---------- !ecran ---------- */
+const fileEcran = []; let ecranCourant = null;
+const dernierEcran = {}; const supprimes = new Set(); const bannis = new Map();
+function autorise(u){
+  if (u.mod) return true;
+  switch (CONFIG.ecranAcces){
+    case 'off': case 'mods': return false;
+    case 'vip':  return u.vip;
+    case 'subs': return u.sub || u.vip;
+    default:     return true;
+  }
+}
+function commandeEcran(u){
+  if (!autorise(u)) return;
+  const now = Date.now();
+  if (!u.mod){
+    if (!moderation.actif || moderation.bannis.has(u.user)) return;
+    if ((moderation.punis.get(u.user) || 0) > now) return;
+    if (u.premierMsg) return;                                                     // tout premier message sur la chaîne
+    if (!u.vip && (moderation.compteur[u.user] || 0) - 1 < CONFIG.ecranMessagesMin) return;
+  }
+  const texte = verifierTexte(u.texte, CONFIG.ecranMaxCaracteres);
+  if (!texte || verifierTexte(u.nom, 25) === null){
+    const n = (moderation.avertis[u.user] = (moderation.avertis[u.user] || 0) + 1);
+    if (n >= 2) moderation.punis.set(u.user, now + 30 * 60e3);                    // 2 refus → bloqué 30 min
+    return;
+  }
+  if (!u.mod && now - (dernierEcran[u.user] || 0) < CONFIG.ecranCooldownUser * 1000) return;
+  if (fileEcran.length + moderation.attente.length >= 6) return;
+  dernierEcran[u.user] = now;
+  const m = { ...u, texte, recu: now };
+  if (moderation.validation && !u.mod){ moderation.attente.push(m); return; }
+  setTimeout(() => publierEcran(m), CONFIG.ecranDelai * 1000);
+}
+function publierEcran(m){
+  if (supprimes.has(m.id) || (bannis.get(m.user) || 0) >= m.recu - 60e3 || moderation.bannis.has(m.user)) return;
+  if (!m.mod && (!moderation.actif || moderation.panique)) return;
+  fileEcran.push(m);
+  if (!ecranCourant) ecranSuivant();
+}
+let ecranTimer;
+function ecranSuivant(){
+  const e = fileEcran.shift();
+  ecranCourant = e || null;
+  if (!e) return;
+  $('#b-nom').textContent = `${e.nom} a écrit`;
+  const t = $('#b-texte'); t.textContent = e.texte;
+  t.style.fontSize = e.texte.length < 40 ? '58px' : e.texte.length < 62 ? '50px' : '44px';
+  $('#bulle').classList.add('on');
+  ecranTimer = setTimeout(fermerEcran, CONFIG.ecranDuree * 1000);
+}
+function fermerEcran(){
+  clearTimeout(ecranTimer);
+  $('#bulle').classList.remove('on');
+  setTimeout(ecranSuivant, 700);
+}
+function retirer(test){
+  for (let i = fileEcran.length - 1; i >= 0; i--) if (test(fileEcran[i])) fileEcran.splice(i, 1);
+  moderation.attente = moderation.attente.filter(e => !test(e));
+  if (ecranCourant && test(ecranCourant)){ ecranCourant = {}; fermerEcran(); }
+}
+function viderEcran(){
+  fileEcran.length = 0; moderation.attente.length = 0;
+  if (ecranCourant){ ecranCourant = {}; fermerEcran(); }
+}
+
+/* ---------- !couleur ---------- */
+let derniereCouleur = 0;
+function commandeCouleur(nom, mod){
+  nom = (nom || '').toLowerCase().trim();
+  if (!PALETTES[nom] || (!mod && Date.now() - derniereCouleur < CONFIG.couleurCooldown * 1000)) return;
+  derniereCouleur = Date.now();
+  appliquerPalette(nom);
+}
+
+/* ---------- chat Twitch (lecture anonyme) ---------- */
+const histoEmotes = {};
+function peutEmote(user){
+  const now = Date.now();
+  const h = (histoEmotes[user] || []).filter(t => now - t < 10e3);
+  histoEmotes[user] = h;
+  if (h.length >= CONFIG.emotesParUserMax) return false;
+  h.push(now); return true;
+}
+function surMessage(tags, msg){
+  const user = tags.username;
+  moderation.compteur[user] = (moderation.compteur[user] || 0) + 1;
+  const b = tags.badges || {};
+  const u = {
+    id: tags.id, user, nom: tags['display-name'] || user, texte: '',
+    mod: !!(tags.mod || b.broadcaster), vip: !!b.vip, sub: !!(tags.subscriber || b.founder),
+    premierMsg: !!tags['first-msg'],
+  };
+  if (tags.emotes && !moderation.panique && !u.premierMsg && !moderation.bannis.has(user)){
+    let k = 0;
+    for (const [id, pos] of Object.entries(tags.emotes))
+      for (let j = 0; j < pos.length && k < CONFIG.emotesParMessage; j++, k++)
+        if (peutEmote(user)) setTimeout(() => pluieEmote(id), k * 160);
+  }
+  if (!msg.startsWith('!')) return;
+  const [cmd, ...rest] = msg.trim().split(/\s+/);
+  u.texte = rest.join(' ');
+  const c = cmd.toLowerCase();
+  if (c === '!ecran')   return commandeEcran(u);
+  if (c === '!couleur') return commandeCouleur(rest[0], u.mod);
+  if (!u.mod) return;
+
+  // --- commandes réservées aux modos ---
+  const nombre = s => parseFloat(String(s || '').replace(',', '.'));
+  const cible = s => String(s || '').replace(/^@/, '').toLowerCase();
+  switch (c){
+    case '!don': {        // !don Pseudo 10 [message] → dons hors Streamlabs
+      const v = nombre(rest[1]);
+      if (rest[0] && v > 0) alerte({ type:'don', nom:rest[0], montant:v, message:rest.slice(2).join(' ') });
+      break;
+    }
+    case '!tresor': { const v = nombre(rest[0]); if (v >= 0){ total = v; majTresor(); } break; }
+    case '!testalerte': alerte({ type:'don', nom:u.nom, montant:5, message:'Test du coffre', test:true }); break;
+    case '!ok':  { const m = moderation.attente.shift(); if (m) publierEcran(m); break; }
+    case '!non': moderation.attente.shift(); break;
+    case '!skip': if (ecranCourant) fermerEcran(); break;
+    case '!clear': viderEcran(); break;
+    case '!ecranoff': moderation.actif = false; viderEcran(); break;
+    case '!ecranon':  moderation.actif = true; break;
+    case '!validation': moderation.validation = rest[0] !== 'off'; break;
+    case '!ecranban': {
+      const p = cible(rest[0]);
+      if (p){ moderation.bannis.add(p); sauverBannis(); retirer(e => e.user === p); }
+      break;
+    }
+    case '!ecranunban': {
+      const p = cible(rest[0]);
+      if (p){ moderation.bannis.delete(p); moderation.punis.delete(p); moderation.avertis[p] = 0; sauverBannis(); }
+      break;
+    }
+    case '!panique':      // coupe tout ce qui vient du chat d'un coup
+      moderation.panique = true; moderation.actif = false; viderEcran(); document.body.classList.add('panique');
+      break;
+    case '!calme':
+      moderation.panique = false; moderation.actif = CONFIG.ecranAcces !== 'off'; document.body.classList.remove('panique');
+      break;
+  }
+}
+function initChat(){
+  if (typeof tmi === 'undefined') return console.warn('tmi.js non chargé');
+  const c = new tmi.Client({ channels:[CONFIG.chaine], connection:{ secure:true, reconnect:true } });
+  c.on('message', (ch, tags, msg) => surMessage(tags, msg));
+  c.on('messagedeleted', (ch, user, txt, tags) => { const id = tags['target-msg-id']; supprimes.add(id); retirer(e => e.id === id); });
+  const vire = (ch, user) => { bannis.set(user, Date.now()); retirer(e => e.user === user); };
+  c.on('timeout', vire); c.on('ban', vire);
+  c.connect().catch(console.error);
+}
+
+/* ---------- Streamlabs (dons, subs, bits, follows) ---------- */
+function initStreamlabs(){
+  if (!CONFIG.streamlabsToken) return;
+  if (typeof io === 'undefined') return console.warn('socket.io non chargé');
+  const s = io(`https://sockets.streamlabs.com?token=${encodeURIComponent(CONFIG.streamlabsToken)}`, { transports:['websocket'] });
+  s.on('event', e => {
+    for (const m of (Array.isArray(e.message) ? e.message : [])){
+      if (e.type === 'donation') alerte({ type:'don', nom:m.name, montant:parseFloat(m.amount) || 0, message:m.message });
+      else if (e.type === 'subscription' || e.type === 'resub') alerte({ type:'sub', nom:m.name, mois:+m.months || 1 });
+      else if (e.type === 'bits') alerte({ type:'bits', nom:m.name, montant:m.amount, message:m.message });
+      else if (e.type === 'follow') toast(nomSur(m.name));
+    }
+  });
+}
+
+/* ---------- mode démo (?demo) ---------- */
+function demo(){
+  const ids = ['25','425618','64138','30259','81274','86','58127','1902'];
+  const noms = ['CapitaineCroquette','MoussaillonDu57','Barbe_Rousse','LaPerleNoire','ToutouPirate'];
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  if (!CONFIG.debut) CONFIG.debut = new Date(Date.now() - 3.2 * 3600e3).toISOString();
+  setInterval(() => pluieEmote(pick(ids)), 500);
+  const faux = () => alerte({ type:'don', nom:pick(noms), montant:pick([2,5,10,20,50]), message:'Pour les toutous du refuge !' });
+  setTimeout(faux, 2500); setInterval(faux, 19000);
+  setTimeout(() => alerte({ type:'sub', nom:'LaPerleNoire', mois:3 }), 40000);
+  const ecr = () => { fileEcran.push({ nom:'MoussaillonDu57', texte:'Salut depuis le fond du stream, les toutous vous saluent !', user:'demo' }); if (!ecranCourant) ecranSuivant(); };
+  setTimeout(ecr, 11000); setInterval(ecr, 25000);
+  setTimeout(() => toast('LaPerleNoire'), 6000);
+  let c = 0; const cycle = ['violet','vert','bleu']; setInterval(() => commandeCouleur(cycle[c++ % 3], true), 30000);
+}
+
+/* ---------- démarrage ---------- */
+ajusterEcran();
+$('#t-titre').textContent = CONFIG.titre;
+$('#t-sous').textContent = CONFIG.sousTitre;
+$('#t-objectif').textContent = `objectif ${euros(CONFIG.objectif)}`;
+appliquerPalette(CONFIG.ambiance);
+construireDecor();
+majTresor();
+try { majButin(JSON.parse(stock.get('ecranPirate.butin') || 'null')); } catch(e){}
+if (document.fonts) document.fonts.ready.then(majTresor);
+majChrono(); setInterval(majChrono, 1000);
+bandeauSuivant(); setInterval(bandeauSuivant, 9000);
+if (CONFIG.demo) demo();
+else { initChat(); initStreamlabs(); }
+</script>
+</body>
+</html>
