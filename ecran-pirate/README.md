@@ -55,13 +55,15 @@ index.html?token=XXX&debut=2026-10-10T18:00&objectif=100000
 
 | Paramètre | Défaut | Rôle |
 |---|---|---|
-| `chaine` | `burri_tv` | chaîne Twitch lue |
+| `chaine` | `burri_tv` | chaîne Twitch lue : le pseudo ou directement le lien du chat (`https://www.twitch.tv/popout/burri_tv/chat` marche) |
 | `token` | — | Socket API token Streamlabs (Paramètres → API Settings → API Tokens) |
 | `debut` | — | début du 24h, active le compte à rebours |
 | `duree` | `24` | durée en heures |
 | `objectif` | `100000` | objectif du trésor en € |
 | `total` | dernier connu | force le total de départ |
 | `ecran` | `tous` | accès à `!ecran` : `tous`, `subs`, `vip`, `mods`, `off` |
+| `marge` | `0` | marge de sécurité en % (ex. `4`) si la télé rogne les bords de l'image |
+| `couleur` | `bleu` | ambiance de départ : bleu, vert, violet, rouge, or, rose |
 | `validation` | — | `1` pour démarrer en mode validation par les modos |
 | `titre` / `sous` | `Burri` / `Gamers4Pets 2026` | textes en haut à gauche |
 | `msgdons` | `1` | `0` pour ne pas afficher le message des donateurs |
@@ -77,6 +79,8 @@ index.html?token=XXX&debut=2026-10-10T18:00&objectif=100000
 3. Start URL → `https://ton-domaine/ecran-pirate/?token=XXX&debut=2026-10-10T18:00`, activer le lancement au démarrage et « garder l'écran allumé ».
 4. Tester avec `?demo` pour vérifier le rendu à la cam.
 
-La page est dessinée en 1920×1080 et s'adapte à n'importe quel écran (bandes noires si le format diffère). Le total du trésor, le dernier butin et les bannis sont gardés dans le navigateur de la TV.
+La page s'adapte à n'importe quelle résolution et n'importe quel format (720p, 1366×768, 16:10, 4:3…) sans bandes noires : le décor s'étire (plus de ciel ou plus de mer) et les panneaux restent collés aux bords. Si la télé coupe les bords, ajouter `&marge=4`.
+
+Au démarrage, une petite carte « Chat connecté #burri_tv » confirme que le chat est bien lu (« Chat injoignable » sinon). Le chat est lu en direct via la connexion officielle de Twitch, sans compte ni librairie externe. Le total du trésor, le dernier butin et les bannis sont gardés dans le navigateur de la TV.
 
 Look : maquette Claude Design « Écran Pirate » (au repos, alerte don, message `!ecran`). `?couleur=vert` pour démarrer dans une autre ambiance (bleu, vert, violet, rouge, or, rose).
