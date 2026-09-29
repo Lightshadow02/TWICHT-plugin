@@ -376,7 +376,7 @@ const CONFIG = {
   streamlabsToken: P.get('token') || '',        // Socket API token Streamlabs (jamais dans le fichier ni sur GitHub)
   titre: P.get('titre') || 'Burri',
   sousTitre: P.get('sous') || 'Gamers4Pets 2026',
-  objectif: parseFloat(P.get('objectif') || 100000),
+  objectif: parseFloat(P.get('objectif') || 2000),
   total: P.has('total') ? parseFloat(P.get('total')) : null, // sinon reprend le dernier total connu
   debut: P.get('debut') || '',                  // ex. 2026-10-10T18:00 → active le compte à rebours
   dureeH: parseFloat(P.get('duree') || 24),

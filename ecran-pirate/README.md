@@ -38,7 +38,7 @@ La page s'adapte à toutes les résolutions et tous les formats (720p, 1366×768
 | `token` | — | Socket API token Streamlabs (Paramètres → API Settings → API Tokens) |
 | `debut` | — | début du 24h, active le compte à rebours (ex. `2026-10-10T18:00`) |
 | `duree` | `24` | durée du stream en heures |
-| `objectif` | `100000` | objectif du trésor en € |
+| `objectif` | `2000` | objectif du trésor en € |
 | `total` | dernier connu | force le total de départ |
 | `marge` | `0` | marge de sécurité en % (ex. `4`) si la télé coupe les bords de l'image |
 | `couleur` | `bleu` | ambiance de départ : `bleu`, `vert`, `violet`, `rouge`, `or`, `rose` |
