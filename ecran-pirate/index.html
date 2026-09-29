@@ -25,16 +25,21 @@
   transition: --ciel0 2.5s, --ciel1 2.5s, --ciel2 2.5s, --mer0 2.5s, --mer1 2.5s, --mer2 2.5s, --mer3 2.5s, --ecume 2.5s;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;cursor:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#050918;cursor:none}
 body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:#fff6e0;-webkit-font-smoothing:antialiased}
 
-/* La scène fait toujours 1920×1080 et s'adapte à l'écran */
-#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;transform-origin:50% 50%;
-  background:linear-gradient(180deg,var(--ciel0) 0%,var(--ciel1) 42%,var(--ciel2) 60%)}
+/* La scène est dessinée pour 1920×1080 minimum et s'étire pour remplir tout l'écran,
+   quel que soit son format. --mx / --my = marge de sécurité (télés qui rognent les bords). */
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;--mx:0px;--my:0px;--vw:1920px;
+  background:linear-gradient(180deg,var(--ciel0) 0%,var(--ciel1) calc(100% - 626px),var(--ciel2) calc(100% - 432px))}
 .abs{position:absolute}
 svg{display:block}
+/* repère 1920×1080 collé en bas au centre / centré : les éléments dedans gardent leurs coordonnées de maquette */
+.cadre-bas{position:absolute;left:calc(50% - 960px);bottom:0;width:1920px;height:1080px;pointer-events:none}
+.cadre-centre{position:absolute;left:calc(50% - 960px);top:calc(50% - 540px);width:1920px;height:1080px}
 
 /* ---------- décor ---------- */
+#etoiles{left:0;top:0;right:0;bottom:440px}
 .etoile{position:absolute;border-radius:50%;background:#fff8e6;animation:scint var(--d) ease-in-out infinite;animation-delay:var(--dl)}
 @keyframes scint{50%{opacity:.12}}
 .nuage{position:absolute;border-radius:50%;background:radial-gradient(ellipse,rgba(190,205,240,.10),rgba(190,205,240,0) 70%);animation:derive var(--t) ease-in-out infinite alternate}
@@ -42,12 +47,13 @@ svg{display:block}
 #halo{left:215px;top:65px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,236,180,.24),rgba(255,236,180,0) 68%)}
 #lune{left:300px;top:150px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#fffbea 0%,#ebdfb1 58%,#c9b986 100%)}
 .cratere{position:absolute;border-radius:50%;background:rgba(150,130,80,.2)}
+.vague{position:absolute;bottom:0}
 .vague path.fond{transition:fill 2.5s}
 .reflet{position:absolute;height:4px;border-radius:2px;background:#ffeec2;animation:miroite var(--d) ease-in-out infinite alternate}
 @keyframes miroite{to{opacity:.08;transform:scaleX(.7)}}
-#bateau-route{left:0;top:560px;width:150px;animation:navigue 260s linear infinite}
+#bateau-route{left:0;bottom:408px;width:150px;animation:navigue 260s linear infinite}
 #bateau{animation:tangue 5s ease-in-out infinite;transform-origin:50% 85%}
-@keyframes navigue{from{transform:translateX(-220px)}to{transform:translateX(2100px)}}
+@keyframes navigue{from{transform:translateX(-220px)}to{transform:translateX(calc(var(--vw) + 100px))}}
 @keyframes tangue{50%{transform:rotate(-3deg) translateY(3px)}}
 #rayons{left:510px;top:180px;width:900px;height:560px;opacity:.45;transition:opacity 1.2s;
   background:repeating-conic-gradient(from -70deg at 50% 100%,rgba(255,214,120,.12) 0deg 5deg,rgba(255,214,120,0) 5deg 14deg);
@@ -67,7 +73,7 @@ svg{display:block}
 @keyframes eclat{0%,70%,100%{opacity:0;transform:scale(.3)}82%{opacity:1;transform:scale(1)}}
 
 /* ---------- interface (HUD) ---------- */
-#titre{left:72px;top:36px;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+#titre{left:calc(72px + var(--mx));top:calc(36px + var(--my));display:flex;flex-direction:column;align-items:flex-start;gap:4px}
 #t-titre{font-family:'Pirata One',serif;font-weight:400;font-size:168px;line-height:1;color:var(--or);
   text-shadow:0 7px 0 #3d2210,0 0 48px rgba(244,198,90,.35)}
 #t-sous{margin-left:8px;padding:8px 48px 10px;background:var(--parchemin2);color:#3b2410;font-family:'IM Fell English SC',serif;font-size:32px;
@@ -78,24 +84,26 @@ svg{display:block}
   display:flex;flex-direction:column;align-items:center}
 .rivet{position:absolute;width:12px;height:12px;border-radius:50%;background:#e4b95a;box-shadow:0 2px 0 var(--bois-fonce)}
 .etiquette{font-family:'IM Fell English SC',serif;font-size:30px;letter-spacing:.06em;color:var(--sable-txt);display:flex;align-items:center;gap:10px;white-space:nowrap}
-#tresor{left:700px;top:0;width:520px;height:320px}
-#tresor .plaque{top:46px;width:520px;padding:20px 32px 24px;gap:2px}
+#tresor{left:calc(50% - 260px);top:0;width:520px}
+#tresor .corde{height:calc(52px + var(--my))}
+#tresor .plaque{top:calc(46px + var(--my));width:520px;padding:20px 32px 24px;gap:2px}
 #t-montant{width:100%;text-align:center;font-family:'Pirata One',serif;font-size:124px;line-height:1;color:var(--or-clair);text-shadow:0 5px 0 var(--bois-fonce);white-space:nowrap;overflow:hidden}
 #t-objectif{font-size:24px;font-weight:600;color:var(--sable-txt);opacity:.8}
-#chrono{right:72px;top:0;width:440px;height:300px}
-#chrono .plaque{top:58px;width:440px;padding:20px 28px 22px;gap:4px}
+#chrono{right:calc(72px + var(--mx));top:0;width:440px}
+#chrono .corde{height:calc(64px + var(--my))}
+#chrono .plaque{top:calc(58px + var(--my));width:440px;padding:20px 28px 22px;gap:4px}
 #c-valeur{font-size:88px;font-weight:800;line-height:1.05;color:#fff6e0;font-variant-numeric:tabular-nums;letter-spacing:.01em;text-shadow:0 5px 0 var(--bois-fonce)}
 #c-unites{font-size:20px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--sable-txt);opacity:.65}
 .carte{position:absolute;background:var(--parchemin2);color:#3b2410;border-radius:12px;
   box-shadow:0 18px 36px rgba(0,0,0,.45),inset 0 0 36px rgba(150,95,35,.4);display:flex;align-items:center;gap:18px;padding:18px 26px}
 .carte .etiq{font-family:'IM Fell English SC',serif;font-size:24px;color:var(--encre-rouge)}
 .carte .nom{font-size:28px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#butin{right:72px;top:780px;width:480px;transform:rotate(1.5deg);transition:opacity .8s,transform .8s}
+#butin{right:calc(72px + var(--mx));bottom:calc(190px + var(--my));width:480px;transform:rotate(1.5deg);transition:opacity .8s,transform .8s}
 #butin.cache{opacity:0;transform:rotate(1.5deg) translateY(30px)}
 #butin-montant{font-family:'Pirata One',serif;font-size:52px;line-height:1;color:#9a6a10;white-space:nowrap}
-#toast{left:72px;top:780px;width:440px;transform:rotate(-1.5deg) translateX(-620px);transition:transform .7s cubic-bezier(.3,1.3,.5,1)}
+#toast{left:calc(72px + var(--mx));bottom:calc(190px + var(--my));width:460px;transform:rotate(-1.5deg) translateX(-700px);transition:transform .7s cubic-bezier(.3,1.3,.5,1)}
 #toast.on{transform:rotate(-1.5deg)}
-#bandeau{left:370px;top:958px;width:1180px;height:88px;border:4px solid var(--encre);border-radius:14px;
+#bandeau{left:370px;bottom:calc(34px + var(--my));width:1180px;height:88px;border:4px solid var(--encre);border-radius:14px;
   background:repeating-linear-gradient(0deg,rgba(0,0,0,.09) 0 2px,rgba(0,0,0,0) 2px 10px),#5b3418;
   box-shadow:0 14px 30px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,220,160,.18)}
 .clou{position:absolute;top:32px;width:14px;height:14px;border-radius:50%;background:var(--encre);box-shadow:inset 0 2px 0 #8a6a40}
@@ -152,17 +160,17 @@ body.panique #bulle,body.panique #emotes{display:none}
 <div id="stage">
 
   <!-- ======= DÉCOR ======= -->
-  <div id="etoiles" class="abs" style="left:0;top:0;width:1920px;height:640px"></div>
-  <div class="nuage" style="left:100px;top:80px;width:420px;height:80px;--t:70s;--dx:80px"></div>
-  <div class="nuage" style="left:1060px;top:200px;width:580px;height:100px;--t:90s;--dx:-120px"></div>
-  <div class="nuage" style="left:1480px;top:60px;width:340px;height:64px;--t:60s;--dx:-60px"></div>
+  <div id="etoiles" class="abs"></div>
+  <div class="nuage" style="left:5%;top:80px;width:420px;height:80px;--t:70s;--dx:80px"></div>
+  <div class="nuage" style="left:55%;top:200px;width:580px;height:100px;--t:90s;--dx:-120px"></div>
+  <div class="nuage" style="left:77%;top:60px;width:340px;height:64px;--t:60s;--dx:-60px"></div>
   <div id="halo" class="abs"></div>
   <div id="lune" class="abs">
     <div class="cratere" style="left:44px;top:70px;width:26px;height:22px"></div>
     <div class="cratere" style="left:96px;top:40px;width:18px;height:16px"></div>
     <div class="cratere" style="left:100px;top:110px;width:34px;height:26px"></div>
   </div>
-  <svg class="vague abs" data-top="640" data-h="440" data-base="12" data-amp="8" data-per="90" data-fond="--mer0" data-duree="60000"></svg>
+  <svg class="vague" data-h="440" data-base="12" data-amp="8" data-per="90" data-fond="--mer0" data-duree="60000"></svg>
   <div id="bateau-route" class="abs">
     <svg id="bateau" width="150" height="112" viewBox="0 0 160 120" style="opacity:.85">
       <path d="M58 14 V92 M102 26 V92" stroke="#0b1020" stroke-width="4"/>
@@ -172,97 +180,100 @@ body.panique #bulle,body.panique #emotes{display:none}
       <path d="M140 92 L156 78" stroke="#0b1020" stroke-width="3"/>
     </svg>
   </div>
-  <svg class="vague abs" data-top="700" data-h="380" data-base="20" data-amp="14" data-per="170" data-fond="--mer1" data-ecume=".35" data-duree="34000"></svg>
+  <svg class="vague" data-h="380" data-base="20" data-amp="14" data-per="170" data-fond="--mer1" data-ecume=".35" data-duree="34000"></svg>
   <div id="reflets"></div>
-  <div id="rayons" class="abs"></div>
-  <div id="lueur" class="abs"></div>
-  <svg class="abs" width="980" height="230" viewBox="0 0 980 230" style="left:470px;top:790px">
-    <path d="M20 172 Q490 38 960 172 Q490 232 20 172 Z" fill="#8f6a3c"/>
-    <path d="M60 160 Q490 30 920 160 Q490 204 60 160 Z" fill="#d9b574"/>
-    <path d="M200 128 Q490 58 780 128 Q490 110 200 128 Z" fill="#ecd29a" opacity=".55"/>
-    <path d="M20 172 Q490 232 960 172" fill="none" style="stroke:var(--ecume)" stroke-width="4" stroke-opacity=".5"/>
-    <ellipse cx="490" cy="118" rx="210" ry="12" fill="#000" opacity=".28"/>
-    <path d="M206 130 l6 -22 l4 20 l8 -26 l3 26 l9 -18 l-2 20 Z" fill="#2f6b3a"/>
-    <path d="M760 132 l5 -18 l4 16 l7 -22 l3 22 l8 -14 l-2 16 Z" fill="#2f6b3a"/>
-    <ellipse cx="846" cy="156" rx="30" ry="14" fill="#4f4c57"/>
-    <ellipse cx="876" cy="163" rx="18" ry="9" fill="#625e6b"/>
-    <g fill="#f5c84c" stroke="#a8761a" stroke-width="2">
-      <ellipse cx="250" cy="140" rx="11" ry="5"/><ellipse cx="276" cy="152" rx="11" ry="5"/><ellipse cx="304" cy="143" rx="11" ry="5"/>
-      <ellipse cx="322" cy="158" rx="11" ry="5"/><ellipse cx="690" cy="156" rx="11" ry="5"/><ellipse cx="704" cy="140" rx="11" ry="5"/>
-      <ellipse cx="730" cy="151" rx="11" ry="5"/>
-    </g>
-    <path d="M742 142 l8 -9 l8 9 l-8 9 Z" fill="#d6405a"/>
-  </svg>
-  <svg id="palmier" class="abs" width="260" height="380" viewBox="0 0 260 380">
-    <path d="M150 380 Q104 250 146 86" fill="none" stroke="#6b4521" stroke-width="20" stroke-linecap="round"/>
-    <path d="M128 330 q12 -6 24 0 M119 285 q12 -6 24 0 M116 240 q12 -6 24 0 M120 195 q12 -6 24 0 M128 150 q12 -6 24 0 M138 112 q10 -5 20 0" fill="none" stroke="#4a2e14" stroke-width="3" stroke-linecap="round"/>
-    <path d="M146 86 Q70 90 34 150 Q84 108 144 98 Z" fill="#185a31"/>
-    <path d="M146 86 Q220 96 244 150 Q200 110 150 98 Z" fill="#185a31"/>
-    <path d="M146 86 Q90 40 18 78 Q84 64 146 96 Z" fill="#1f6b3a"/>
-    <path d="M146 86 Q200 30 252 70 Q196 62 146 98 Z" fill="#1f6b3a"/>
-    <path d="M146 86 Q120 20 62 10 Q112 40 142 96 Z" fill="#2a8047"/>
-    <path d="M146 86 Q176 14 236 20 Q184 40 150 96 Z" fill="#2a8047"/>
-    <circle cx="138" cy="100" r="9" fill="#4a2e14"/><circle cx="156" cy="103" r="9" fill="#3d2610"/><circle cx="147" cy="112" r="8" fill="#4a2e14"/>
-  </svg>
-  <svg class="abs" width="200" height="280" viewBox="0 0 200 280" style="left:1230px;top:644px">
-    <path d="M22 24 V280" stroke="#3b2614" stroke-width="7" stroke-linecap="round"/>
-    <circle cx="22" cy="20" r="7" fill="#e6b546"/>
-    <g id="tissu">
-      <path d="M25 30 Q70 18 112 32 Q150 44 192 34 L186 126 Q146 136 108 122 Q68 108 25 118 Z" fill="#141118"/>
-      <path d="M64 112 L148 52 M64 52 L148 112" stroke="#ece5d3" stroke-width="9" stroke-linecap="round"/>
-      <g fill="#ece5d3">
-        <circle cx="58" cy="110" r="6"/><circle cx="66" cy="118" r="6"/><circle cx="146" cy="46" r="6"/><circle cx="154" cy="54" r="6"/>
-        <circle cx="58" cy="54" r="6"/><circle cx="66" cy="46" r="6"/><circle cx="146" cy="118" r="6"/><circle cx="154" cy="110" r="6"/>
+
+  <div class="cadre-bas">
+    <div id="rayons" class="abs"></div>
+    <div id="lueur" class="abs"></div>
+    <svg class="abs" width="980" height="230" viewBox="0 0 980 230" style="left:470px;top:790px">
+      <path d="M20 172 Q490 38 960 172 Q490 232 20 172 Z" fill="#8f6a3c"/>
+      <path d="M60 160 Q490 30 920 160 Q490 204 60 160 Z" fill="#d9b574"/>
+      <path d="M200 128 Q490 58 780 128 Q490 110 200 128 Z" fill="#ecd29a" opacity=".55"/>
+      <path d="M20 172 Q490 232 960 172" fill="none" style="stroke:var(--ecume)" stroke-width="4" stroke-opacity=".5"/>
+      <ellipse cx="490" cy="118" rx="210" ry="12" fill="#000" opacity=".28"/>
+      <path d="M206 130 l6 -22 l4 20 l8 -26 l3 26 l9 -18 l-2 20 Z" fill="#2f6b3a"/>
+      <path d="M760 132 l5 -18 l4 16 l7 -22 l3 22 l8 -14 l-2 16 Z" fill="#2f6b3a"/>
+      <ellipse cx="846" cy="156" rx="30" ry="14" fill="#4f4c57"/>
+      <ellipse cx="876" cy="163" rx="18" ry="9" fill="#625e6b"/>
+      <g fill="#f5c84c" stroke="#a8761a" stroke-width="2">
+        <ellipse cx="250" cy="140" rx="11" ry="5"/><ellipse cx="276" cy="152" rx="11" ry="5"/><ellipse cx="304" cy="143" rx="11" ry="5"/>
+        <ellipse cx="322" cy="158" rx="11" ry="5"/><ellipse cx="690" cy="156" rx="11" ry="5"/><ellipse cx="704" cy="140" rx="11" ry="5"/>
+        <ellipse cx="730" cy="151" rx="11" ry="5"/>
       </g>
-      <g fill="#ece5d3" stroke="#141118" stroke-width="4">
-        <ellipse cx="106" cy="92" rx="23" ry="19"/><ellipse cx="80" cy="64" rx="9" ry="11"/><ellipse cx="98" cy="54" rx="9" ry="11"/>
-        <ellipse cx="116" cy="54" rx="9" ry="11"/><ellipse cx="133" cy="64" rx="9" ry="11"/>
+      <path d="M742 142 l8 -9 l8 9 l-8 9 Z" fill="#d6405a"/>
+    </svg>
+    <svg id="palmier" class="abs" width="260" height="380" viewBox="0 0 260 380">
+      <path d="M150 380 Q104 250 146 86" fill="none" stroke="#6b4521" stroke-width="20" stroke-linecap="round"/>
+      <path d="M128 330 q12 -6 24 0 M119 285 q12 -6 24 0 M116 240 q12 -6 24 0 M120 195 q12 -6 24 0 M128 150 q12 -6 24 0 M138 112 q10 -5 20 0" fill="none" stroke="#4a2e14" stroke-width="3" stroke-linecap="round"/>
+      <path d="M146 86 Q70 90 34 150 Q84 108 144 98 Z" fill="#185a31"/>
+      <path d="M146 86 Q220 96 244 150 Q200 110 150 98 Z" fill="#185a31"/>
+      <path d="M146 86 Q90 40 18 78 Q84 64 146 96 Z" fill="#1f6b3a"/>
+      <path d="M146 86 Q200 30 252 70 Q196 62 146 98 Z" fill="#1f6b3a"/>
+      <path d="M146 86 Q120 20 62 10 Q112 40 142 96 Z" fill="#2a8047"/>
+      <path d="M146 86 Q176 14 236 20 Q184 40 150 96 Z" fill="#2a8047"/>
+      <circle cx="138" cy="100" r="9" fill="#4a2e14"/><circle cx="156" cy="103" r="9" fill="#3d2610"/><circle cx="147" cy="112" r="8" fill="#4a2e14"/>
+    </svg>
+    <svg class="abs" width="200" height="280" viewBox="0 0 200 280" style="left:1230px;top:644px">
+      <path d="M22 24 V280" stroke="#3b2614" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="22" cy="20" r="7" fill="#e6b546"/>
+      <g id="tissu">
+        <path d="M25 30 Q70 18 112 32 Q150 44 192 34 L186 126 Q146 136 108 122 Q68 108 25 118 Z" fill="#141118"/>
+        <path d="M64 112 L148 52 M64 52 L148 112" stroke="#ece5d3" stroke-width="9" stroke-linecap="round"/>
+        <g fill="#ece5d3">
+          <circle cx="58" cy="110" r="6"/><circle cx="66" cy="118" r="6"/><circle cx="146" cy="46" r="6"/><circle cx="154" cy="54" r="6"/>
+          <circle cx="58" cy="54" r="6"/><circle cx="66" cy="46" r="6"/><circle cx="146" cy="118" r="6"/><circle cx="154" cy="110" r="6"/>
+        </g>
+        <g fill="#ece5d3" stroke="#141118" stroke-width="4">
+          <ellipse cx="106" cy="92" rx="23" ry="19"/><ellipse cx="80" cy="64" rx="9" ry="11"/><ellipse cx="98" cy="54" rx="9" ry="11"/>
+          <ellipse cx="116" cy="54" rx="9" ry="11"/><ellipse cx="133" cy="64" rx="9" ry="11"/>
+        </g>
       </g>
-    </g>
-  </svg>
-  <svg id="coffre" class="abs" width="440" height="345" viewBox="0 0 440 345">
-    <defs><clipPath id="clipOr"><rect x="40" y="-100" width="360" height="262"/></clipPath></defs>
-    <path d="M60 152 L78 40 Q220 -2 362 40 L380 152 Z" fill="#4a2912"/>
-    <path d="M86 144 L100 58 Q220 26 340 58 L354 144 Z" fill="#1f1008"/>
-    <path d="M130 24 L118 150 M310 24 L322 150" stroke="#c8952f" stroke-width="16"/>
-    <path d="M78 40 Q220 -2 362 40" fill="none" stroke="#c8952f" stroke-width="12" stroke-linecap="round"/>
-    <g clip-path="url(#clipOr)"><g id="or" style="transform:translateY(80px)">
-      <path d="M48 176 C100 22 340 22 392 176 V345 H48 Z" fill="#f2c14e"/>
-      <path d="M70 170 C120 60 320 60 370 170" fill="none" stroke="#ffe08a" stroke-width="6" opacity=".7"/>
-      <path d="M48 176 C100 22 340 22 392 176" fill="none" stroke="#b8841a" stroke-width="3"/>
-      <g fill="#ffd66b" stroke="#a8761a" stroke-width="2.5">
-        <ellipse cx="150" cy="80" rx="16" ry="7"/><ellipse cx="222" cy="58" rx="16" ry="7"/><ellipse cx="292" cy="82" rx="16" ry="7"/>
-        <ellipse cx="186" cy="106" rx="16" ry="7"/><ellipse cx="258" cy="112" rx="16" ry="7"/><ellipse cx="116" cy="130" rx="16" ry="7"/>
-        <ellipse cx="324" cy="132" rx="16" ry="7"/><ellipse cx="222" cy="140" rx="16" ry="7"/>
+    </svg>
+    <svg id="coffre" class="abs" width="440" height="345" viewBox="0 0 440 345">
+      <defs><clipPath id="clipOr"><rect x="40" y="-100" width="360" height="262"/></clipPath></defs>
+      <path d="M60 152 L78 40 Q220 -2 362 40 L380 152 Z" fill="#4a2912"/>
+      <path d="M86 144 L100 58 Q220 26 340 58 L354 144 Z" fill="#1f1008"/>
+      <path d="M130 24 L118 150 M310 24 L322 150" stroke="#c8952f" stroke-width="16"/>
+      <path d="M78 40 Q220 -2 362 40" fill="none" stroke="#c8952f" stroke-width="12" stroke-linecap="round"/>
+      <g clip-path="url(#clipOr)"><g id="or" style="transform:translateY(80px)">
+        <path d="M48 176 C100 22 340 22 392 176 V345 H48 Z" fill="#f2c14e"/>
+        <path d="M70 170 C120 60 320 60 370 170" fill="none" stroke="#ffe08a" stroke-width="6" opacity=".7"/>
+        <path d="M48 176 C100 22 340 22 392 176" fill="none" stroke="#b8841a" stroke-width="3"/>
+        <g fill="#ffd66b" stroke="#a8761a" stroke-width="2.5">
+          <ellipse cx="150" cy="80" rx="16" ry="7"/><ellipse cx="222" cy="58" rx="16" ry="7"/><ellipse cx="292" cy="82" rx="16" ry="7"/>
+          <ellipse cx="186" cy="106" rx="16" ry="7"/><ellipse cx="258" cy="112" rx="16" ry="7"/><ellipse cx="116" cy="130" rx="16" ry="7"/>
+          <ellipse cx="324" cy="132" rx="16" ry="7"/><ellipse cx="222" cy="140" rx="16" ry="7"/>
+        </g>
+        <path d="M200 90 l10 -12 l10 12 l-10 12 Z" fill="#d6405a" stroke="#7a1426" stroke-width="2"/>
+        <path d="M268 62 l8 -10 l8 10 l-8 10 Z" fill="#3fb57a" stroke="#155c38" stroke-width="2"/>
+        <path d="M136 106 l9 -11 l9 11 l-9 11 Z" fill="#4a8fe0" stroke="#1d4a85" stroke-width="2"/>
+        <path class="eclat" d="M226 28 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 l12 -4 Z" fill="#fffbe8"/>
+        <path class="eclat" style="animation-delay:1.1s" d="M160 60 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#fffbe8"/>
+        <path class="eclat" style="animation-delay:2.2s" d="M304 56 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#fffbe8"/>
+      </g></g>
+      <rect x="44" y="152" width="352" height="180" rx="10" fill="#7a4520"/>
+      <path d="M44 212 H396 M44 272 H396" stroke="#4f2b12" stroke-width="4"/>
+      <path d="M60 184 q40 -6 80 0 t80 0 M150 244 q40 6 80 0 t70 0 M70 304 q50 -5 100 0 t90 0" fill="none" stroke="#5e3416" stroke-width="2" opacity=".6"/>
+      <rect x="36" y="140" width="368" height="24" rx="6" fill="#c8952f"/>
+      <path d="M40 162 H400" stroke="#8a6116" stroke-width="3"/>
+      <rect x="100" y="152" width="26" height="180" fill="#c8952f"/>
+      <rect x="314" y="152" width="26" height="180" fill="#c8952f"/>
+      <path d="M124 164 V332 M338 164 V332" stroke="#8a6116" stroke-width="3"/>
+      <g fill="#f0cf73">
+        <circle cx="113" cy="190" r="4"/><circle cx="113" cy="246" r="4"/><circle cx="113" cy="306" r="4"/>
+        <circle cx="327" cy="190" r="4"/><circle cx="327" cy="246" r="4"/><circle cx="327" cy="306" r="4"/>
+        <circle cx="58" cy="152" r="4"/><circle cx="382" cy="152" r="4"/>
       </g>
-      <path d="M200 90 l10 -12 l10 12 l-10 12 Z" fill="#d6405a" stroke="#7a1426" stroke-width="2"/>
-      <path d="M268 62 l8 -10 l8 10 l-8 10 Z" fill="#3fb57a" stroke="#155c38" stroke-width="2"/>
-      <path d="M136 106 l9 -11 l9 11 l-9 11 Z" fill="#4a8fe0" stroke="#1d4a85" stroke-width="2"/>
-      <path class="eclat" d="M226 28 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 l12 -4 Z" fill="#fffbe8"/>
-      <path class="eclat" style="animation-delay:1.1s" d="M160 60 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#fffbe8"/>
-      <path class="eclat" style="animation-delay:2.2s" d="M304 56 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#fffbe8"/>
-    </g></g>
-    <rect x="44" y="152" width="352" height="180" rx="10" fill="#7a4520"/>
-    <path d="M44 212 H396 M44 272 H396" stroke="#4f2b12" stroke-width="4"/>
-    <path d="M60 184 q40 -6 80 0 t80 0 M150 244 q40 6 80 0 t70 0 M70 304 q50 -5 100 0 t90 0" fill="none" stroke="#5e3416" stroke-width="2" opacity=".6"/>
-    <rect x="36" y="140" width="368" height="24" rx="6" fill="#c8952f"/>
-    <path d="M40 162 H400" stroke="#8a6116" stroke-width="3"/>
-    <rect x="100" y="152" width="26" height="180" fill="#c8952f"/>
-    <rect x="314" y="152" width="26" height="180" fill="#c8952f"/>
-    <path d="M124 164 V332 M338 164 V332" stroke="#8a6116" stroke-width="3"/>
-    <g fill="#f0cf73">
-      <circle cx="113" cy="190" r="4"/><circle cx="113" cy="246" r="4"/><circle cx="113" cy="306" r="4"/>
-      <circle cx="327" cy="190" r="4"/><circle cx="327" cy="246" r="4"/><circle cx="327" cy="306" r="4"/>
-      <circle cx="58" cy="152" r="4"/><circle cx="382" cy="152" r="4"/>
-    </g>
-    <path d="M44 290 V332 H86 V318 H58 V290 Z" fill="#2f2b2b"/>
-    <path d="M396 290 V332 H354 V318 H382 V290 Z" fill="#2f2b2b"/>
-    <path d="M194 172 H246 V214 Q246 238 220 250 Q194 238 194 214 Z" fill="#e6b546" stroke="#8a5c10" stroke-width="3"/>
-    <circle cx="220" cy="198" r="7" fill="#2a170a"/>
-    <path d="M216 202 H224 L222 224 H218 Z" fill="#2a170a"/>
-  </svg>
-  <svg class="vague abs" data-top="960" data-h="120" data-base="20" data-amp="16" data-per="210" data-fond="--mer2" data-ecume=".4" data-duree="22000"></svg>
-  <svg class="vague abs" data-top="1016" data-h="64" data-base="16" data-amp="12" data-per="250" data-fond="--mer3" data-ecume=".3" data-duree="16000" data-inverse="1"></svg>
+      <path d="M44 290 V332 H86 V318 H58 V290 Z" fill="#2f2b2b"/>
+      <path d="M396 290 V332 H354 V318 H382 V290 Z" fill="#2f2b2b"/>
+      <path d="M194 172 H246 V214 Q246 238 220 250 Q194 238 194 214 Z" fill="#e6b546" stroke="#8a5c10" stroke-width="3"/>
+      <circle cx="220" cy="198" r="7" fill="#2a170a"/>
+      <path d="M216 202 H224 L222 224 H218 Z" fill="#2a170a"/>
+    </svg>
+  </div>
+  <svg class="vague" data-h="120" data-base="20" data-amp="16" data-per="210" data-fond="--mer2" data-ecume=".4" data-duree="22000"></svg>
+  <svg class="vague" data-h="64" data-base="16" data-amp="12" data-per="250" data-fond="--mer3" data-ecume=".3" data-duree="16000" data-inverse="1"></svg>
 
   <div id="emotes"></div>
 
@@ -273,7 +284,7 @@ body.panique #bulle,body.panique #emotes{display:none}
   </div>
 
   <div id="tresor" class="abs">
-    <div class="corde" style="left:96px;height:52px"></div><div class="corde" style="right:96px;height:52px"></div>
+    <div class="corde" style="left:96px"></div><div class="corde" style="right:96px"></div>
     <div class="plaque">
       <div class="rivet" style="left:12px;top:12px"></div><div class="rivet" style="right:12px;top:12px"></div>
       <div class="rivet" style="left:12px;bottom:12px"></div><div class="rivet" style="right:12px;bottom:12px"></div>
@@ -284,7 +295,7 @@ body.panique #bulle,body.panique #emotes{display:none}
   </div>
 
   <div id="chrono" class="abs">
-    <div class="corde" style="left:80px;height:64px"></div><div class="corde" style="right:80px;height:64px"></div>
+    <div class="corde" style="left:80px"></div><div class="corde" style="right:80px"></div>
     <div class="plaque">
       <div class="etiquette">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e8cf94" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9s8 4 8 9"/></svg>
@@ -307,56 +318,61 @@ body.panique #bulle,body.panique #emotes{display:none}
   <div id="toast" class="carte">
     <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#8e2a12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21M8 11h8M5 13a7 7 0 0 0 14 0"/></svg>
     <div style="display:flex;flex-direction:column;min-width:0">
-      <div class="etiq">Nouveau matelot</div>
+      <div class="etiq" id="toast-etiq">Nouveau matelot</div>
       <div class="nom" id="toast-nom"></div>
     </div>
   </div>
 
-  <div id="bandeau" class="abs">
-    <div class="clou" style="left:18px"></div><div class="clou" style="right:18px"></div>
-    <div id="b-contenu"></div>
-  </div>
-
-  <!-- ======= MESSAGE !ecran ======= -->
-  <div id="bulle" class="abs">
-    <div class="rouleau"></div>
-    <div id="b-papier">
-      <div id="b-nom"></div>
-      <div id="b-texte"></div>
-      <div id="b-sceau" class="sceau">
-        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#f6d9c8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21M8 11h8M5 13a7 7 0 0 0 14 0"/></svg>
-      </div>
+  <div class="cadre-bas">
+    <div id="bandeau" class="abs">
+      <div class="clou" style="left:18px"></div><div class="clou" style="right:18px"></div>
+      <div id="b-contenu"></div>
     </div>
-    <div class="rouleau"></div>
+
+    <!-- ======= MESSAGE !ecran ======= -->
+    <div id="bulle" class="abs">
+      <div class="rouleau"></div>
+      <div id="b-papier">
+        <div id="b-nom"></div>
+        <div id="b-texte"></div>
+        <div id="b-sceau" class="sceau">
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#f6d9c8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21M8 11h8M5 13a7 7 0 0 0 14 0"/></svg>
+        </div>
+      </div>
+      <div class="rouleau"></div>
+    </div>
   </div>
 
   <!-- ======= ALERTE ======= -->
   <div id="alerte" class="abs">
     <div id="a-voile"></div>
-    <div id="a-rayons" class="abs"></div>
-    <div id="a-carte" class="abs">
-      <div id="a-type"></div>
-      <div class="filet"><i></i>
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8e2a12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21M8 11h8M5 13a7 7 0 0 0 14 0"/></svg>
-      <i></i></div>
-      <div id="a-nom"></div>
-      <div id="a-msg"></div>
-      <div id="a-sceau" class="sceau"><div id="a-sceau-val"></div><div id="a-sceau-sous"></div></div>
+    <div class="cadre-centre">
+      <div id="a-rayons" class="abs"></div>
+      <div id="a-carte" class="abs">
+        <div id="a-type"></div>
+        <div class="filet"><i></i>
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8e2a12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21M8 11h8M5 13a7 7 0 0 0 14 0"/></svg>
+        <i></i></div>
+        <div id="a-nom"></div>
+        <div id="a-msg"></div>
+        <div id="a-sceau" class="sceau"><div id="a-sceau-val"></div><div id="a-sceau-sous"></div></div>
+      </div>
     </div>
   </div>
 
   <div id="effets"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/tmi.js@1.8.5/dist/tmi.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 <script>
 /* =====================================================================
    CONFIG — tout se règle ici ou via l'URL (?chaine=...&token=...)
    ===================================================================== */
 const P = new URLSearchParams(location.search);
+// accepte « burri_tv », « #burri_tv » ou une URL Twitch (même le popout du chat)
+const extraireChaine = s => { const m = String(s).match(/twitch\.tv\/(?:popout\/)?([a-z0-9_]{3,25})/i); return (m ? m[1] : String(s).replace(/^#/, '')).trim().toLowerCase(); };
 const CONFIG = {
-  chaine: P.get('chaine') || 'burri_tv',
+  chaine: extraireChaine(P.get('chaine') || 'burri_tv'),
   streamlabsToken: P.get('token') || '',        // Socket API token Streamlabs (jamais dans le fichier ni sur GitHub)
   titre: P.get('titre') || 'Burri',
   sousTitre: P.get('sous') || 'Gamers4Pets 2026',
@@ -366,6 +382,7 @@ const CONFIG = {
   dureeH: parseFloat(P.get('duree') || 24),
   afficherMsgDons: P.get('msgdons') !== '0',
   ambiance: P.get('couleur') || 'bleu',
+  marge: Math.max(0, Math.min(10, parseFloat(P.get('marge') || 0))), // % de marge si la télé rogne les bords
 
   // !ecran : qui peut l'utiliser → tous | subs | vip | mods | off
   ecranAcces: P.get('ecran') || 'tous',
@@ -392,7 +409,7 @@ const CONFIG = {
     { icone:'patte', avant:'Tous les dons vont à la cause animale', cmd:'', apres:'' },
     { icone:'ancre', avant:'Spamme des emotes,', cmd:'', apres:'elles tombent dans la mer' },
   ],
-  demo: P.has('demo') || window.self !== window.top,
+  demo: P.has('demo'),
 };
 
 const PALETTES = { // ciel ×3, mer ×4, écume
@@ -437,37 +454,51 @@ function ajusterTaille(el, max, min){
   let s = max; el.style.fontSize = s + 'px';
   while (el.scrollWidth > el.clientWidth + 1 && s > min){ s -= 4; el.style.fontSize = s + 'px'; }
 }
+
+/* ---------- responsive ----------
+   La maquette fait 1920×1080. On l'agrandit/réduit pour que ce cadre tienne à l'écran,
+   puis la scène s'étire dans l'autre sens : plus de ciel sur un écran haut, plus de mer
+   sur un écran large. Aucune bande noire, quel que soit le format de la télé. */
+let VW = 1920, VH = 1080, dernierVW = 0;
 function ajusterEcran(){
   const k = Math.min(innerWidth / 1920, innerHeight / 1080);
-  stage.style.transform = `translate(-50%, -50%) scale(${k})`;
+  VW = innerWidth / k; VH = innerHeight / k;
+  Object.assign(stage.style, { width: VW + 'px', height: VH + 'px', transform: `scale(${k})` });
+  stage.style.setProperty('--vw', VW + 'px');
+  stage.style.setProperty('--mx', (VW * CONFIG.marge / 100) + 'px');
+  stage.style.setProperty('--my', (VH * CONFIG.marge / 100) + 'px');
+  if (Math.abs(VW - dernierVW) > 2){ dernierVW = VW; construireVagues(); }
 }
-addEventListener('resize', ajusterEcran);
+let resizeTimer;
+addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(ajusterEcran, 150); });
 
 /* ---------- décor ---------- */
 function construireDecor(){
   const et = $('#etoiles');
-  for (let i = 0; i < 80; i++){
-    const x = rnd(0, 1920), y = rnd(0, 600), t = rnd(1, 3.6);
-    if (x > 230 && x < 540 && y > 90 && y < 390) continue;           // pas d'étoiles sur la lune
+  for (let i = 0; i < 90; i++){
+    const x = rnd(0, 100), y = rnd(0, 97), t = rnd(1, 3.6);
     const s = document.createElement('div'); s.className = 'etoile';
-    Object.assign(s.style, { left: x + 'px', top: y + 'px', width: t + 'px', height: t + 'px', opacity: rnd(.3, 1) });
+    Object.assign(s.style, { left: x + '%', top: y + '%', width: t + 'px', height: t + 'px', opacity: rnd(.3, 1) });
     s.style.setProperty('--d', rnd(2, 6) + 's'); s.style.setProperty('--dl', rnd(0, 5) + 's');
     et.appendChild(s);
   }
   const rf = $('#reflets');
   for (let i = 0; i < 9; i++){
     const w = rnd(40, 150), d = document.createElement('div'); d.className = 'reflet';
-    Object.assign(d.style, { left: (385 - w / 2 + rnd(-15, 15)) + 'px', top: (664 + i * 24) + 'px', width: w + 'px', opacity: (.55 - i * .05) });
+    Object.assign(d.style, { left: (385 - w / 2 + rnd(-15, 15)) + 'px', bottom: (412 - i * 24) + 'px', width: w + 'px', opacity: (.55 - i * .05) });
     d.style.setProperty('--d', rnd(1.5, 3.5) + 's');
     rf.appendChild(d);
   }
-  // vagues : un motif périodique qu'on fait glisser d'une période, en boucle
+}
+// vagues : un motif périodique aussi large que l'écran, qu'on fait glisser d'une période en boucle
+function construireVagues(){
   document.querySelectorAll('svg.vague').forEach(v => {
-    const D = v.dataset, per = +D.per, base = +D.base, amp = +D.amp, H = +D.h, W = 1920 + per * 2;
+    v.getAnimations().forEach(a => a.cancel());
+    const D = v.dataset, per = +D.per, base = +D.base, amp = +D.amp, H = +D.h, W = Math.ceil(VW) + per * 2;
     let d = `M0 ${base}`;
     for (let x = 0; x < W; x += per) d += ` Q${x + per / 2} ${base - amp} ${x + per} ${base}`;
     v.setAttribute('width', W); v.setAttribute('height', H); v.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    v.style.left = (-per) + 'px'; v.style.top = D.top + 'px';
+    v.style.left = (-per) + 'px';
     v.innerHTML = `<path class="fond" d="${d} V${H} H0 Z" style="fill:var(${D.fond})"/>` +
       (D.ecume ? `<path d="${d}" fill="none" style="stroke:var(--ecume)" stroke-width="3" stroke-opacity="${D.ecume}"/>` : '');
     const sens = D.inverse ? -1 : 1;
@@ -542,9 +573,9 @@ function pluieEmote(id){
   img.src = `https://static-cdn.jtvnw.net/emoticons/v2/${encodeURIComponent(id)}/default/dark/3.0`;
   const t = rnd(72, 128);
   img.style.width = img.style.height = t + 'px';
-  img.style.left = rnd(30, 1820) + 'px';
+  img.style.left = rnd(30, VW - 100) + 'px';
   $('#emotes').appendChild(img);
-  const fin = rnd(700, 990), sway = rnd(-110, 110);
+  const fin = VH - rnd(90, 380), sway = rnd(-110, 110);
   const anim = img.animate([
     { transform:`translate(0, -140px) rotate(${-sway / 6}deg)`, opacity:0 },
     { opacity:1, offset:.08 },
@@ -558,13 +589,13 @@ function pluieEmote(id){
 
 /* ---------- explosion de pièces (depuis le coffre) ---------- */
 function explosionPieces(n){
-  const x0 = 960, y0 = 690;
+  const x0 = VW / 2, y0 = VH - 390;
   for (let i = 0; i < n; i++){
     const c = document.createElement('div'); c.className = 'piece';
     const k = rnd(.55, 1.25);
     c.style.left = x0 + 'px'; c.style.top = y0 + 'px';
     $('#effets').appendChild(c);
-    const dx = rnd(-880, 880), haut = rnd(300, 680);
+    const dx = rnd(-.46, .46) * VW, haut = rnd(300, 680);
     c.animate([
       { transform:`translate(0,0) scale(${k * .4})`, easing:'cubic-bezier(.2,.8,.4,1)' },
       { transform:`translate(${dx * .55}px, ${-haut}px) scale(${k}) rotateY(${rnd(180, 720)}deg)`, offset:.45, easing:'cubic-bezier(.5,0,.8,.4)' },
@@ -612,7 +643,8 @@ function alerteSuivante(){
 }
 
 let toastTimer;
-function toast(nom){
+function toast(nom, etiquette = 'Nouveau matelot'){
+  $('#toast-etiq').textContent = etiquette;
   $('#toast-nom').textContent = nom;
   const t = $('#toast'); t.classList.add('on');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 5000);
@@ -754,7 +786,7 @@ function commandeCouleur(nom, mod){
   appliquerPalette(nom);
 }
 
-/* ---------- chat Twitch (lecture anonyme) ---------- */
+/* ---------- messages du chat ---------- */
 const histoEmotes = {};
 function peutEmote(user){
   const now = Date.now();
@@ -822,14 +854,73 @@ function surMessage(tags, msg){
       break;
   }
 }
+
+/* ---------- connexion au chat Twitch ----------
+   Connexion directe en lecture seule (anonyme), sans librairie externe. */
+const IRC_ECHAP = { s:' ', ':':';', r:'\r', n:'\n', '\\':'\\' };
+const desechapper = v => v.replace(/\\(.)/g, (_, c) => IRC_ECHAP[c] ?? c);
+function lireLigne(ligne){
+  const tags = {};
+  if (ligne[0] === '@'){
+    const sp = ligne.indexOf(' ');
+    for (const kv of ligne.slice(1, sp).split(';')){ const eq = kv.indexOf('='); tags[kv.slice(0, eq)] = desechapper(kv.slice(eq + 1)); }
+    ligne = ligne.slice(sp + 1);
+  }
+  let prefixe = '';
+  if (ligne[0] === ':'){ const sp = ligne.indexOf(' '); prefixe = ligne.slice(1, sp); ligne = ligne.slice(sp + 1); }
+  const i = ligne.indexOf(' :');
+  const texte = i >= 0 ? ligne.slice(i + 2) : '';
+  const parts = (i >= 0 ? ligne.slice(0, i) : ligne).split(' ');
+  return { tags, prefixe, cmd: parts[0], texte };
+}
+function tagsTwitch(t, prefixe){
+  const badges = {};
+  (t.badges || '').split(',').filter(Boolean).forEach(x => { const [k, v] = x.split('/'); badges[k] = v; });
+  let emotes = null;
+  if (t.emotes){ emotes = {}; t.emotes.split('/').forEach(e => { const [id, pos] = e.split(':'); if (id && pos) emotes[id] = pos.split(','); }); }
+  const username = (t.login || prefixe.split('!')[0] || '').toLowerCase();
+  return { id: t.id, username, 'display-name': t['display-name'] || username, badges, emotes,
+           mod: t.mod === '1', subscriber: t.subscriber === '1', 'first-msg': t['first-msg'] === '1' };
+}
+let chatEssais = 0, chatAnnonce = false;
 function initChat(){
-  if (typeof tmi === 'undefined') return console.warn('tmi.js non chargé');
-  const c = new tmi.Client({ channels:[CONFIG.chaine], connection:{ secure:true, reconnect:true } });
-  c.on('message', (ch, tags, msg) => surMessage(tags, msg));
-  c.on('messagedeleted', (ch, user, txt, tags) => { const id = tags['target-msg-id']; supprimes.add(id); retirer(e => e.id === id); });
-  const vire = (ch, user) => { bannis.set(user, Date.now()); retirer(e => e.user === user); };
-  c.on('timeout', vire); c.on('ban', vire);
-  c.connect().catch(console.error);
+  let ws;
+  try { ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443'); } catch(e){ return setTimeout(initChat, 5000); }
+  ws.onopen = () => {
+    ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
+    ws.send('PASS SCHMOOPIIE');
+    ws.send('NICK justinfan' + Math.floor(10000 + Math.random() * 80000));
+    ws.send('JOIN #' + CONFIG.chaine);
+  };
+  ws.onmessage = ev => {
+    for (const ligne of String(ev.data).split('\r\n')){
+      if (!ligne) continue;
+      const m = lireLigne(ligne);
+      switch (m.cmd){
+        case 'PING': ws.send('PONG :' + m.texte); break;
+        case 'ROOMSTATE':
+          chatEssais = 0;
+          if (!chatAnnonce){ chatAnnonce = true; toast('#' + CONFIG.chaine, 'Chat connecté'); }
+          console.log('[chat] connecté à #' + CONFIG.chaine);
+          break;
+        case 'PRIVMSG':
+          surMessage(tagsTwitch(m.tags, m.prefixe), m.texte.replace(/^\u0001ACTION (.*)\u0001$/, '$1'));
+          break;
+        case 'CLEARMSG': { const id = m.tags['target-msg-id']; supprimes.add(id); retirer(e => e.id === id); break; }
+        case 'CLEARCHAT': {                                        // timeout / ban (ou chat vidé par un modo)
+          const user = (m.texte || '').toLowerCase();
+          if (user){ bannis.set(user, Date.now()); retirer(e => e.user === user); } else viderEcran();
+          break;
+        }
+        case 'RECONNECT': ws.close(); break;
+      }
+    }
+  };
+  ws.onclose = () => {
+    chatEssais++;
+    if (chatEssais === 3) toast('#' + CONFIG.chaine, 'Chat injoignable');
+    setTimeout(initChat, Math.min(30000, 1000 * 2 ** chatEssais));
+  };
 }
 
 /* ---------- Streamlabs (dons, subs, bits, follows) ---------- */
@@ -864,12 +955,12 @@ function demo(){
 }
 
 /* ---------- démarrage ---------- */
-ajusterEcran();
 $('#t-titre').textContent = CONFIG.titre;
 $('#t-sous').textContent = CONFIG.sousTitre;
 $('#t-objectif').textContent = `objectif ${euros(CONFIG.objectif)}`;
 appliquerPalette(CONFIG.ambiance);
 construireDecor();
+ajusterEcran();
 majTresor();
 try { majButin(JSON.parse(stock.get('ecranPirate.butin') || 'null')); } catch(e){}
 if (document.fonts) document.fonts.ready.then(majTresor);
